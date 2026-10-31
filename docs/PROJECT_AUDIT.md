@@ -48,11 +48,11 @@
 
 ## Виявлені прогалини та ризики
 
-1. **Owner-частина групового передзамовлення неповна.** Існують гостьовий flow і видалення сесії, але в `RouteRegistry.cs` не виявлено API отримання повного списку учасників, owner-session ID і підтвердження зведеного замовлення. Повного owner-екрана у frontend також не виявлено. Деталі очікуваних endpoint-ів є у `homework-backend.md`.
+1. **Owner-частина групового передзамовлення реалізована.** Додано owner-маршрути, owner-сесію, owner-меню, редагування власного кошика, видалення guest і консолідований submit; у frontend є сторінка Group Order і вхід із картки бронювання. Деталі — `docs/PROGRESS.md`.
 2. **Немає локального запуску backend як вебсервера.** Підтверджено локальні unit-тести, але не звичайний локальний API.
 3. **Версії середовища.** Репозиторій очікує Node.js 24.16.0; README backend рекомендує Python 3.10–3.11 для інструментів Syndicate; Lambda-проєкти таргетять .NET 10.
-4. **AWS-регіон вказівки суперечливі.** README/Terraform/workflow вказують `us-west-2`; frontend `CLAUDE.md` містить примітку про інший backend/dev API регіон. Потрібно звірити реальну deployment-конфігурацію перед використанням AWS.
-5. **CI конфігурація має потенційну невідповідність:** `.github/workflows/deploy.yml` налаштовує .NET 8, тоді як backend csproj таргетять .NET 10. Не запускати цей workflow через публікацію коду без перевірки.
+4. **AWS-регіон зафіксовано як `us-west-2`.** Це відповідає Terraform, `backend.tf`, Syndicate-конфігурації та наявному dev API. Згадка `eu-west-1` у frontend `CLAUDE.md` застаріла.
+5. **CI конфігурацію виправлено:** `.github/workflows/deploy.yml` тепер використовує .NET 10. Перед запуском workflow все одно потрібно перевірити AWS secrets і дозволи.
 6. **Залежності backend мають security advisory.** `dotnet test` показав NU1901/NU1902/NU1903 для деяких NuGet-пакетів. Версії не змінювалися під час аудиту.
 7. **Frontend має відому технічну заборгованість**, описану в `frontend/restaurant-frontend-app/CLAUDE.md`: lint-помилки, застарілі/stub-тести, великий bundle та npm audit issues. Не проводити масовий рефакторинг у межах термінової функції.
 8. **S3 доступність:** Terraform свідомо робить frontend bucket приватним за CloudFront; окремі buckets для публічних зображень/Swagger мають публічний read policy. Перед розгортанням перевірити зміни плану.
@@ -91,13 +91,13 @@ dotnet test .\restaurant-backend-app.sln
 - `dotnet test .\restaurant-backend-app.sln` після розробки group-order backend — **148 пройдено, 0 помилок**; залишаються попередження компілятора і вразливих NuGet залежностей.
 - `npm ci` завершився: 635 пакетів встановлено; npm повідомив про 57 advisory (37 moderate, 17 high, 3 critical). `npm audit fix` без аналізу не запускався.
 - Production build пройшов, bundle placeholder check успішний. Initial bundle близько 790 kB; перевищує Angular warning budget 500 kB, але нижче 1 MB error budget.
-- Цільові frontend-тести group-order сторінки/API та входу з картки бронювання: 13 passed. Останній повний suite: 201/254 passed, 53 failed; основні залишкові проблеми — старі `spyOnProperty`-помилки та відсутні Angular test providers/inputs.
-- AWS-команди, Terraform plan/apply і deployment не виконувалися.
+- Цільові frontend-тести group-order сторінки/API та входу з картки бронювання: **14 passed**. Останній повний suite: **209/255 passed, 46 failed**; 34 з них — той самий `spyOnProperty` на non-configurable `FileReader.prototype`, решта — давні `should create` без providers/inputs.
+- Terraform `init -backend=false`, `validate` і `fmt -check` пройшли; `deployment_resources.json` перевірено на валідність і дублікати ключів. AWS-команди, Terraform plan/apply і deployment не виконувалися.
 
 ## План для технічної частини 3-го рівня
 
-1. Завершити перевірку frontend install/build і локального UI.
-2. Завершити запропоновану EPAM функцію групового pre-order власника: захищений перегляд учасників/сум, власна сесія власника, керування гостями та підтвердження зведеного замовлення в Angular і backend.
-3. Перевірити AWS-конфігурацію без розкриття credentials і підготувати план із оцінкою ресурсів/витрат.
+1. ~~Завершити перевірку frontend install/build і локального UI.~~ Виконано: build проходить, локальний UI перевірено в браузері.
+2. ~~Завершити запропоновану EPAM функцію групового pre-order власника.~~ Виконано: owner API, owner-сесія, керування кошиком/гостями, консолідований submit і Angular-сторінка.
+3. ~~Перевірити AWS-конфігурацію без розкриття credentials.~~ Частково: Terraform validate/fmt і JSON-конфіги перевірено; `plan` потребує AWS credentials.
 4. Попросити підтвердження перед AWS deployment. Не виконувати `terraform apply` / `destroy` і не публікувати код без окремого дозволу.
 5. Підготувати посилання та інструкції для здачі; кодовий репозиторій може бути GitHub або інший сервіс згідно з матеріалами зустрічей.
