@@ -15,6 +15,7 @@ describe('CardReservationComponent', () => {
     endTime: new Date('2026-11-10T19:30:00Z'),
     guestCount: 3,
     status: ReservationStatusCustomer.Reserved,
+    customerId: 'customer-1',
     restaurantName: 'Green & Tasty',
     locationAddress: '48 Rustaveli Avenue',
     waiterId: 'waiter-1',
@@ -53,6 +54,13 @@ describe('CardReservationComponent', () => {
 
   it('does not show group-order for a single-guest reservation', () => {
     fixture.componentRef.setInput('r', { ...reservation, guestCount: 1 });
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.textContent).not.toContain('Group order');
+  });
+
+  it('does not show group-order for an anonymous reservation', () => {
+    fixture.componentRef.setInput('r', { ...reservation, customerId: undefined });
     fixture.detectChanges();
 
     expect(fixture.nativeElement.textContent).not.toContain('Group order');

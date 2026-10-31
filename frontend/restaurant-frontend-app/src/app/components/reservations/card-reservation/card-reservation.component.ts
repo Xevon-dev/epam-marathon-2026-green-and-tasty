@@ -138,6 +138,7 @@ export class CardReservationComponent {
 
   readonly canOpenGroupOrder = computed(() =>
     this.role() === Roles.CUSTOMER &&
+    Boolean(this.r().customerId) &&
     this.r().guestCount >= 2 &&
     this.r().status === ReservationStatusCustomer.Reserved,
   );
