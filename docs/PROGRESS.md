@@ -16,6 +16,7 @@
 - Виправлено локальний `project_path` у `.syndicate-config-restaurant-backend-app/syndicate.yml` та очевидний зайвий символ в імені artifacts bucket.
 - Terraform: `init -backend=false`, `validate` і `fmt -check` пройшли; створено `docs/DEPLOYMENT_RUNBOOK.md` з командами, перевірками та застереженнями щодо витрат.
 - Створено `docs/DEMO_SCRIPT.md` — покроковий сценарій показу фічі для себе та перевіряючих.
+- Виявлено й виправлено дублікати трьох API Gateway-маршрутів у `deployment_resources.json`; `ApiRoutes.md` узгоджено з фактичними response-моделями.
 - Усі зміни feature зафіксовано локальним комітом `826cc98` у гілці `feature/group-preorder-owner`; remote і push відсутні.
 
 ## Перевірки
