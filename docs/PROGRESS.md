@@ -17,6 +17,8 @@
 - Terraform: `init -backend=false`, `validate` і `fmt -check` пройшли; створено `docs/DEPLOYMENT_RUNBOOK.md` з командами, перевірками та застереженнями щодо витрат.
 - Створено `docs/DEMO_SCRIPT.md` — покроковий сценарій показу фічі для себе та перевіряючих.
 - Виявлено й виправлено дублікати трьох API Gateway-маршрутів у `deployment_resources.json`; `ApiRoutes.md` узгоджено з фактичними response-моделями.
+- CI workflow `.github/workflows/deploy.yml` оновлено з .NET 8 на .NET 10 відповідно до цільової версії backend.
+- AWS Syndicate 1.21.3 встановлено в локальний `syndicate_venv` (Python 3.11). Спроба `syndicate build` зупинилася на `NoCredentialsError`: Syndicate потребує AWS-доступ навіть для build, тому пакування перевіримо після надання credentials.
 - Усі зміни feature зафіксовано локальним комітом `826cc98` у гілці `feature/group-preorder-owner`; remote і push відсутні.
 
 ## Перевірки
@@ -30,7 +32,7 @@
 ## Не виконувалося
 
 - AWS identity/profile check успішно не пройшов: `aws sts get-caller-identity` повертає `NoCredentials`. AWS CLI 2.39.3 і Terraform 1.16.6 встановлені.
-- Terraform init із S3 backend, plan, apply, destroy, Syndicate deploy, створення AWS-ресурсів не виконувалися.
+- Terraform init із S3 backend, plan, apply, destroy, Syndicate build/deploy, створення AWS-ресурсів не виконувалися. `syndicate build` локально впав на `NoCredentialsError`.
 - GitHub repo creation, git remote або push не виконувалися.
 - Реальний end-to-end виклик нових API не перевірений: локального HTTP-хоста backend немає, а AWS API ще не оновлений нашим кодом.
 
