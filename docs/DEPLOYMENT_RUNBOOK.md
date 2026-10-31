@@ -113,8 +113,13 @@ npm ci
 npm run build
 aws s3 sync dist/restaurant-frontend-app/browser "s3://restaurant-frontend-$ACCOUNT_ID/" --delete
 cd ../../infra/terraform
+$DIST_ID = terraform output -raw cloudfront_distribution_id
+aws cloudfront create-invalidation --distribution-id $DIST_ID --paths "/*"
 terraform output cloudfront_distribution_domain_name
 ```
+
+Виконуй кроки в одному PowerShell-сеансі, щоб `$ACCOUNT_ID` і `$DIST_ID` залишалися
+доступними. Інвалідація CloudFront потрібна, інакше браузер може показувати старий bundle.
 
 Відкрий `https://<cloudfront-domain>` і перевір сценарій з `docs/EPAM_SUBMISSION.md`.
 
