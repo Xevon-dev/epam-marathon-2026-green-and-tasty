@@ -554,15 +554,6 @@ Response: `200 OK`
 }
 ```
 
-### `GET` /reservations/{reservationId}/guest-session-id
-Response: `200 OK`
-```json
-{
-  "guestSessionId": "string"
-}
-```
-
-
 ### `DELETE` /reservations
 Request body:
 ```json
@@ -1216,41 +1207,12 @@ Response: 200 OK
 }
 ```
 
-### `GET` /group-reservations/{groupReservationId}/status
+### `GET` /guest/groups/{groupReservationId}/status
 Response: 200 OK
 ```json
 {
-  "status": "string",
-  "totalGuests": 4,
-  "submittedGuests": 3
-}
-```
-
-### `POST` /group-reservations/{groupReservationId}/submit
-Response: 200 OK
-```json
-{
-  "message": "Group reservation pre-order submitted successfully."
-}
-```
-
-### `GET` /guest/groups/{groupReservationId}/sessions
-Response: 200 OK
-```json
-[
-  {
-    "id": "string",
-    "groupReservationId": "string",
-    "guestName": "string",
-    "status": "string"
-  }
-]
-```
-
-### `DELETE` /guest/groups/{groupReservationId}/sessions/{guestSessionId}
-Response: 200 OK
-```json
-{
-  "message": "Guest session removed from group successfully."
+  "currentParticipants": 3,
+  "maxCapacity": 4,
+  "status": "Open"
 }
 ```
