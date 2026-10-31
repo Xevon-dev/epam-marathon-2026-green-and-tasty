@@ -1,0 +1,43 @@
+# IDE / editor
+.idea/
+.vscode/
+*.iml
+*.code-workspace
+
+# OS
+.DS_Store
+._*
+Thumbs.db
+
+# Node
+node_modules/
+
+# Local env
+.env
+.env.local
+.env.*
+!.env.example
+
+# Local Python environments and caches
+.venv/
+venv/
+syndicate_venv/
+__pycache__/
+*.py[cod]
+
+# Local AWS credentials and machine-specific Syndicate configuration
+**/.aws/
+**/.syndicate-config-restaurant-backend-app/
+
+# Terraform
+**/.terraform/
+*.tfstate
+*.tfstate.*
+*.tfvars
+*.tfvars.json
+*.tfplan
+crash.log
+crash.*.log
+
+# Claude Code local state and worktrees
+.claude/
