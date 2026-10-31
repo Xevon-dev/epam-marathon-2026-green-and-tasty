@@ -19,6 +19,7 @@
 - Виявлено й виправлено дублікати трьох API Gateway-маршрутів у `deployment_resources.json`; `ApiRoutes.md` узгоджено з фактичними response-моделями.
 - CI workflow `.github/workflows/deploy.yml` оновлено з .NET 8 на .NET 10 відповідно до цільової версії backend.
 - AWS Syndicate 1.21.3 встановлено в локальний `syndicate_venv` (Python 3.11). Спроба `syndicate build` зупинилася на `NoCredentialsError`: Syndicate потребує AWS-доступ навіть для build, тому пакування перевіримо після надання credentials.
+- `dotnet publish` для `APIHandler.csproj` у конфігурації Release успішний: згенеровано `APIHandler.dll` і залежності, придатні для Lambda-пакета. Залишилися лише попередження NuGet/компілятора, не помилки.
 - Усі зміни feature зафіксовано локальним комітом `826cc98` у гілці `feature/group-preorder-owner`; remote і push відсутні.
 
 ## Перевірки

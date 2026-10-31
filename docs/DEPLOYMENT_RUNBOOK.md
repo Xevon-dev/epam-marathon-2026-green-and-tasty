@@ -89,6 +89,9 @@ terraform output
 
 ## 5. Backend через Syndicate
 
+> Syndicate потребує AWS credentials навіть для `build`, тому спочатку заверши крок 1.
+> Локальний `syndicate_venv` уже створений; якщо його немає — команди нижче створять його заново.
+
 ```powershell
 cd ../../backend/restaurant-backend-app
 python -m venv syndicate_venv
