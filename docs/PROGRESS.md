@@ -15,19 +15,21 @@
 - Локальний Angular dev server запущено на `http://127.0.0.1:4200/`; головна сторінка відкривається в браузері. Наявний dev API `https://eknqcvq3l1.execute-api.us-west-2.amazonaws.com/develop` відповідає `200` на `GET /locations`, тому базовий застосунок можна переглядати локально.
 - Виправлено локальний `project_path` у `.syndicate-config-restaurant-backend-app/syndicate.yml` та очевидний зайвий символ в імені artifacts bucket.
 - Terraform: `init -backend=false`, `validate` і `fmt -check` пройшли; створено `docs/DEPLOYMENT_RUNBOOK.md` з командами, перевірками та застереженнями щодо витрат.
+- Створено `docs/DEMO_SCRIPT.md` — покроковий сценарій показу фічі для себе та перевіряючих.
+- Усі зміни feature зафіксовано локальним комітом `826cc98` у гілці `feature/group-preorder-owner`; remote і push відсутні.
 
 ## Перевірки
 
 - Backend: **148 passed, 0 failed** (`dotnet test`). Є NuGet security warnings для `SixLabors.ImageSharp` 3.1.12.
 - Цільові frontend-тести group-order сервісу, сторінки та входу з картки бронювання: **13 passed**.
 - Production build Angular проходить; initial bundle ~790 kB, перевищує warning budget 500 kB, але нижче error budget 1 MB.
-- Повний frontend suite: **201 passed, 53 failed із 254**. Це переважно давні проблеми тестових stub-ів: `spyOnProperty`, відсутні Angular providers/required inputs. Повний suite не можна позначати як зелений.
+- Повний frontend suite (останній запуск): **208 passed, 46 failed із 254**. 34 з 46 — це той самий `spyOnProperty(FileReader.prototype, 'result'/'readyState')`, який падає на non-configurable native getter; решта — давні `should create` без потрібних providers/inputs і застарілий `AppComponent` title. У попередньому запуску було 53 failed, тобто частина legacy-тестів нестабільна; повний suite не можна позначати як зелений.
 - `deployment_resources.json` і `lambda_config.json` коректно парсяться як JSON; нові маршрути зареєстровані в `RouteRegistry`.
 
 ## Не виконувалося
 
 - AWS identity/profile check успішно не пройшов: `aws sts get-caller-identity` повертає `NoCredentials`. AWS CLI 2.39.3 і Terraform 1.16.6 встановлені.
-- Terraform init/plan/apply/destroy, Syndicate deploy, створення AWS-ресурсів не виконувалися.
+- Terraform init із S3 backend, plan, apply, destroy, Syndicate deploy, створення AWS-ресурсів не виконувалися.
 - GitHub repo creation, git remote або push не виконувалися.
 - Реальний end-to-end виклик нових API не перевірений: локального HTTP-хоста backend немає, а AWS API ще не оновлений нашим кодом.
 
