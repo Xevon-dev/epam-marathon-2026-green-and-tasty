@@ -64,6 +64,15 @@ export const routes: Routes = [
         component: ProfileComponent,
       },
       {
+        canActivate: [AuthGuard],
+        data: { authorized: true },
+        path: 'group-order/:reservationId',
+        loadComponent: () =>
+          import('./pages/group-order-page/group-order-page.component').then(
+            (module) => module.GroupOrderPageComponent,
+          ),
+      },
+      {
         path: 'main',
         component: MainPageComponent,
       },

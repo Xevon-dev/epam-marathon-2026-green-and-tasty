@@ -1,0 +1,56 @@
+@use 'app/shared/styles/abstracts/colors' as color;
+
+.group-order-page { min-height: 70vh; background: color.$neutral-100; }
+.page-navigation { display: flex; gap: .75rem; padding: 1rem 2.5rem; color: color.$neutral-700; }
+.page-navigation a { color: inherit; text-decoration: none; }
+.page-navigation a:hover { text-decoration: underline; }
+.group-order-content { max-width: 1280px; margin: 0 auto; padding: 1.5rem 2.5rem 4rem; }
+.page-heading { margin-bottom: 2rem; }
+.page-heading h1 { margin: .25rem 0 .5rem; color: color.$neutral-900; font-size: clamp(2rem, 4vw, 3rem); }
+.page-heading > p:last-child { color: color.$neutral-700; }
+.eyebrow { margin: 0 0 .35rem; color: color.$green-600; font-size: .85rem; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; }
+.summary-strip { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1rem; margin-bottom: 2.5rem; }
+.summary-strip > div { display: flex; flex-direction: column; gap: .4rem; padding: 1.1rem 1.25rem; border-radius: .9rem; background: color.$neutral-0; }
+.summary-strip span, .muted { color: color.$neutral-700; }
+.summary-strip strong { color: color.$green-800; font-size: 1.35rem; }
+.section-heading { display: flex; align-items: center; justify-content: space-between; gap: 1rem; margin-bottom: 1rem; }
+.section-heading h2 { margin: 0; color: color.$neutral-900; }
+.participants-section, .owner-menu-section { margin-top: 2.5rem; }
+.participants-list { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1rem; }
+.participant-card, .state-panel, .success-panel { padding: 1.25rem; border: 1px solid color.$neutral-200; border-radius: 1rem; background: color.$neutral-0; }
+.participant-header { display: flex; align-items: flex-start; justify-content: space-between; gap: .75rem; }
+.participant-header h3 { margin: 0 0 .25rem; color: color.$neutral-900; }
+.participant-type { color: color.$neutral-700; font-size: .85rem; }
+.status-pill { flex: none; padding: .3rem .55rem; border-radius: 999px; background: color.$neutral-200; color: color.$neutral-900; font-size: .75rem; }
+.status-pill--submitted { background: color.$green-100; color: color.$green-800; }
+.dish-list { display: grid; gap: .6rem; margin: 1rem 0; padding: 0; list-style: none; }
+.dish-list li, .participant-footer { display: flex; align-items: center; justify-content: space-between; gap: .75rem; }
+.dish-list li { color: color.$neutral-900; font-size: .92rem; }
+.participant-footer { padding-top: .85rem; border-top: 1px solid color.$neutral-200; }
+.remove-button { margin-left: auto; border: 0; background: transparent; color: color.$red-400; font: inherit; cursor: pointer; }
+.dish-actions { display: inline-flex; align-items: center; gap: .5rem; }
+.remove-dish-button { display: inline-flex; width: 1.5rem; height: 1.5rem; align-items: center; justify-content: center; border: 1px solid color.$neutral-200; border-radius: 50%; background: color.$neutral-0; color: color.$red-400; font: inherit; line-height: 1; cursor: pointer; }
+.owner-menu-section { padding-top: 1.25rem; border-top: 1px solid color.$neutral-200; }
+.menu-list { display: grid; grid-template-columns: repeat(auto-fit, minmax(290px, 1fr)); gap: .75rem; }
+.menu-dish { display: flex; align-items: center; gap: .75rem; padding: .75rem; border-radius: .9rem; background: color.$neutral-0; }
+.menu-dish img { width: 4.25rem; height: 4.25rem; border-radius: 50%; object-fit: cover; }
+.menu-dish-info { display: flex; min-width: 0; flex: 1; flex-direction: column; gap: .2rem; color: color.$neutral-900; }
+.menu-dish-info span { overflow: hidden; color: color.$neutral-700; font-size: .8rem; text-overflow: ellipsis; white-space: nowrap; }
+.menu-dish-info b { color: color.$green-800; }
+.menu-dish--unavailable { opacity: .55; }
+.add-button { padding: .5rem .7rem; border: 1px solid color.$green-600; border-radius: .5rem; background: color.$neutral-0; color: color.$green-800; font: inherit; font-weight: 600; cursor: pointer; }
+.add-button:disabled, .button:disabled { cursor: not-allowed; opacity: .55; }
+.submit-footer { display: flex; align-items: center; justify-content: space-between; gap: 1rem; margin-top: 2rem; padding: 1.25rem; border-radius: 1rem; background: color.$neutral-0; }
+.submit-footer p { margin: 0; color: color.$neutral-700; }
+.submit-button { min-height: 3rem; }
+.inline-error, .error-panel { color: color.$red-400; }
+.success-panel { margin: 1rem 0; border-color: color.$green-300; color: color.$green-800; }
+.success-text { color: color.$green-800; }
+
+@media (max-width: 700px) {
+  .page-navigation { padding: 1rem; }
+  .group-order-content { padding: 1rem 1rem 3rem; }
+  .summary-strip { grid-template-columns: 1fr; }
+  .section-heading, .submit-footer { align-items: stretch; flex-direction: column; }
+  .menu-list { grid-template-columns: 1fr; }
+}

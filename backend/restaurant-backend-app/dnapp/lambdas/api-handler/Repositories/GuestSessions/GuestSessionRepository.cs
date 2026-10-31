@@ -58,7 +58,9 @@ public class GuestSessionRepository(IDynamoDBContext context) : IGuestSessionRep
             IndexName = GlobalSecondaryIndexes.GuestSession.GroupReservationId
         }).GetRemainingAsync();
 
-        return result.Count;
+        // The owner is not a guest seat. Owner sessions share this table but must
+        // not reduce the number of guests allowed by the reservation capacity.
+        return result.Count(session => !session.IsOwnerSession);
     }
 
     public async Task DeleteAsync(GuestSession session)

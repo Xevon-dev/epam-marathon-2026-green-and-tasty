@@ -1,0 +1,154 @@
+<main class="group-order-page">
+  <nav class="page-navigation" aria-label="Breadcrumb">
+    <a routerLink="/reservations">My Reservations</a>
+    <span aria-hidden="true">›</span>
+    <span aria-current="page">Group order</span>
+  </nav>
+
+  <section class="group-order-content" aria-labelledby="group-order-title">
+    <header class="page-heading">
+      <p class="eyebrow">Green &amp; Tasty · Shared pre-order</p>
+      <h1 id="group-order-title">Your group order</h1>
+      <p>Review your guests’ dishes, manage participants, and send one combined order.</p>
+    </header>
+
+    @if (isLoading) {
+      <p class="state-panel" role="status">Loading participants and menu…</p>
+    } @else if (errorMessage && !snapshot) {
+      <div class="state-panel error-panel" role="alert">
+        <p>{{ errorMessage }}</p>
+        <button type="button" class="button button--secondary" (click)="load()">Try again</button>
+      </div>
+    } @else if (snapshot) {
+      @if (errorMessage) {
+        <p class="inline-error" role="alert">{{ errorMessage }}</p>
+      }
+
+      @if (successMessage) {
+        <div class="success-panel" role="status">
+          <strong>{{ successMessage }}</strong>
+          @if (submittedItems.length > 0) {
+            <p>{{ submittedItems.length }} combined dish position(s) were sent to the kitchen.</p>
+          }
+        </div>
+      }
+
+      <section class="summary-strip" aria-label="Group order summary">
+        <div><span>Participants</span><strong>{{ snapshot.participants.length }}</strong></div>
+        <div><span>Carts submitted</span><strong>{{ submittedParticipantCount }}</strong></div>
+        <div><span>Combined total</span><strong>{{ snapshot.total | currency: 'USD' }}</strong></div>
+      </section>
+
+      <section class="participants-section" aria-labelledby="participants-title">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">Participants</p>
+            <h2 id="participants-title">Dishes and status</h2>
+          </div>
+        </div>
+
+        @if (snapshot.participants.length === 0) {
+          <div class="state-panel">No guests have joined this group order yet.</div>
+        } @else {
+          <div class="participants-list">
+            @for (participant of snapshot.participants; track participant.id) {
+              <article class="participant-card">
+                <header class="participant-header">
+                  <div>
+                    <h3>{{ participant.name }}</h3>
+                    <span class="participant-type">{{ participant.type === 'Owner' ? 'Reservation owner' : 'Guest' }}</span>
+                  </div>
+                  <span class="status-pill" [class.status-pill--submitted]="participant.isSubmitted">
+                    {{ participant.isSubmitted ? 'Cart submitted' : 'Still choosing' }}
+                  </span>
+                </header>
+
+                @if (participant.items.length === 0) {
+                  <p class="muted">No dishes yet.</p>
+                } @else {
+                  <ul class="dish-list">
+                    @for (item of participant.items; track item.dish.id) {
+                      <li>
+                        <span>{{ item.dish.name }} <span class="muted">× {{ item.quantity }}</span></span>
+                        <span class="dish-actions">
+                          <strong>{{ item.dish.price * item.quantity | currency: 'USD' }}</strong>
+                          @if (canEditOwnerDish(participant)) {
+                            <button
+                              type="button"
+                              class="remove-dish-button"
+                              [attr.aria-label]="'Remove ' + item.dish.name"
+                              (click)="removeOwnerDish(item.dish.id)"
+                            >
+                              ×
+                            </button>
+                          }
+                        </span>
+                      </li>
+                    }
+                  </ul>
+                }
+
+                <footer class="participant-footer">
+                  <span>Subtotal</span>
+                  <strong>{{ participant.total | currency: 'USD' }}</strong>
+                  @if (participant.type === 'Guest' && !isGroupSubmitted) {
+                    <button type="button" class="remove-button" (click)="removeGuest(participant)">
+                      Remove guest
+                    </button>
+                  }
+                </footer>
+              </article>
+            }
+          </div>
+        }
+      </section>
+
+      @if (ownerParticipant && !isGroupSubmitted) {
+        <section class="owner-menu-section" aria-labelledby="owner-menu-title">
+          <div class="section-heading">
+            <div>
+            <p class="eyebrow">Your order</p>
+            <h2 id="owner-menu-title">Add dishes for yourself</h2>
+            </div>
+            @if (!ownerParticipant.isSubmitted && ownerParticipant.items.length > 0) {
+              <button type="button" class="button button--primary" [disabled]="isSubmittingOwner" (click)="submitOwnerSession()">
+                {{ isSubmittingOwner ? 'Submitting…' : 'Submit my dishes' }}
+              </button>
+            }
+          </div>
+
+          @if (ownerParticipant.isSubmitted) {
+            <p class="state-panel success-text">Your cart is submitted and ready to be included in the group order.</p>
+          } @else if (menuDishes.length === 0) {
+            <p class="state-panel">The menu is currently unavailable.</p>
+          } @else {
+            <div class="menu-list">
+              @for (dish of menuDishes; track dish.id) {
+                <article class="menu-dish" [class.menu-dish--unavailable]="!dish.selectable">
+                  <img [src]="dish.imageUrl || 'assets/img/dish.png'" [alt]="dish.name" />
+                  <div class="menu-dish-info">
+                    <strong>{{ dish.name }}</strong>
+                    <span>{{ dish.description }}</span>
+                    <b>{{ dish.price | currency: 'USD' }}</b>
+                  </div>
+                  <button type="button" class="add-button" [disabled]="!dish.selectable || ownerParticipant.isSubmitted" (click)="addOwnerDish(dish)">
+                    Add
+                  </button>
+                </article>
+              }
+            </div>
+          }
+        </section>
+      }
+
+      @if (!isGroupSubmitted) {
+        <footer class="submit-footer">
+        <p>Only submitted carts will be included ({{ submittedTotal | currency: 'USD' }}).</p>
+          <button type="button" class="button button--primary submit-button" [disabled]="!canSubmitGroup || isSubmittingGroup" (click)="submitGroupOrder()">
+            {{ isSubmittingGroup ? 'Submitting order…' : 'Confirm group order' }}
+          </button>
+        </footer>
+      }
+    }
+  </section>
+</main>

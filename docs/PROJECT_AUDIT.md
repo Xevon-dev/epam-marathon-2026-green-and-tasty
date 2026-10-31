@@ -88,14 +88,16 @@ dotnet test .\restaurant-backend-app.sln
 - Node.js 24.16.0 завантажено окремо у `%LOCALAPPDATA%\Programs\marathon-tools`; Node.js 24.11.0, що вже був у системі, не замінювався.
 - .NET SDK 10.0.403 інстальовано локально в `%USERPROFILE%\.dotnet`.
 - Python 3.11.9 встановлено поряд із Python 3.13.5.
-- `dotnet test .\restaurant-backend-app.sln` — **141 пройдено, 0 помилок**; є попередження компілятора і вразливих залежностей.
-- `npm ci` запущено, результат очікується.
+- `dotnet test .\restaurant-backend-app.sln` після розробки group-order backend — **148 пройдено, 0 помилок**; залишаються попередження компілятора і вразливих NuGet залежностей.
+- `npm ci` завершився: 635 пакетів встановлено; npm повідомив про 57 advisory (37 moderate, 17 high, 3 critical). `npm audit fix` без аналізу не запускався.
+- Production build пройшов, bundle placeholder check успішний. Initial bundle близько 790 kB; перевищує Angular warning budget 500 kB, але нижче 1 MB error budget.
+- Цільові frontend-тести group-order сторінки/API та входу з картки бронювання: 13 passed. Останній повний suite: 201/254 passed, 53 failed; основні залишкові проблеми — старі `spyOnProperty`-помилки та відсутні Angular test providers/inputs.
 - AWS-команди, Terraform plan/apply і deployment не виконувалися.
 
 ## План для технічної частини 3-го рівня
 
 1. Завершити перевірку frontend install/build і локального UI.
-2. Реалізувати запитану користувачем функцію Favorites («Обрані страви»), оскільки її не знайдено в репозиторії, а субтитри дозволяють власну фічу: Angular UI, захищений user-specific backend API, стійке збереження у DynamoDB та тести.
+2. Завершити запропоновану EPAM функцію групового pre-order власника: захищений перегляд учасників/сум, власна сесія власника, керування гостями та підтвердження зведеного замовлення в Angular і backend.
 3. Перевірити AWS-конфігурацію без розкриття credentials і підготувати план із оцінкою ресурсів/витрат.
 4. Попросити підтвердження перед AWS deployment. Не виконувати `terraform apply` / `destroy` і не публікувати код без окремого дозволу.
 5. Підготувати посилання та інструкції для здачі; кодовий репозиторій може бути GitHub або інший сервіс згідно з матеріалами зустрічей.

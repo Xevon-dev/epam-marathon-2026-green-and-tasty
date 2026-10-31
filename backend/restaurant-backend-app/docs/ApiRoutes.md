@@ -1074,6 +1074,53 @@ Response: `200 OK`
 
 ## Group & Guest Reservations
 
+### `GET` /reservations/{reservationId}/guest-session-id
+Requires the authenticated reservation owner. Creates the owner's group session if one does not exist and returns it with the group ID and group status.
+
+Response: `200 OK`
+```json
+{
+  "guestSessionId": "owner-session-id",
+  "groupReservationId": "group-id",
+  "status": "Open"
+}
+```
+
+### `GET` /guest/groups/{groupReservationId}/sessions
+Requires the authenticated reservation owner. Returns each participant's dishes, subtotal, submitted state, and the group total. Guests are never authorized to read the combined list.
+
+### `GET` /group-reservations/{groupReservationId}/owner-session/menu
+Returns the location menu for the authenticated reservation owner. This is a separate Cognito-protected route; guest-session tokens are not used for the owner interface.
+
+### `POST` /group-reservations/{groupReservationId}/owner-session/dishes
+Adds a dish to the authenticated owner's own group session.
+
+Request body:
+```json
+{
+  "dishId": "string",
+  "quantity": 1
+}
+```
+
+### `DELETE` /group-reservations/{groupReservationId}/owner-session/dishes/{dishId}
+Removes that dish from the authenticated owner's own group session.
+
+### `POST` /group-reservations/{groupReservationId}/owner-session/submit
+Marks the owner's non-empty session as submitted.
+
+### `POST` /group-reservations/{groupReservationId}/submit
+Requires the authenticated reservation owner. Combines the dishes in submitted sessions by `dishId`, writes the combined items to the reservation pre-order, submits it, then marks the group as submitted.
+
+Request body:
+```json
+{
+  "reservationId": "string"
+}
+```
+
+Only submitted participant sessions are included. Duplicate dishes are combined by `dishId`; the reservation's pre-order is updated and submitted, then the group is marked submitted. Missing reservation/order or empty submitted baskets are rejected.
+
 ### `GET` /guest/invites/{token}
 Response: `200 OK`
 ```json

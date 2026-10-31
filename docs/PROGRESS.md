@@ -6,23 +6,36 @@
 
 - Переглянуто структуру проєкту, README компонентів, Terraform, ключові API-маршрути та матеріали backend/AQA homework.
 - Проаналізовано надані субтитри зустрічей 1–8 і окремий файл субтитрів 9-ї зустрічі.
-- Створено `docs/PROJECT_AUDIT.md` та `docs/EPAM_REQUIREMENTS.md`.
-- Ініціалізовано локальний Git; зафіксовано початковий стан у коміті `7f245a3`. Remote не налаштований, `git push` не виконувався.
+- Створено `docs/PROJECT_AUDIT.md`, `docs/EPAM_REQUIREMENTS.md`, `docs/EPAM_SUBMISSION.md`.
+- Ініціалізовано локальний Git; початковий стан зафіксовано в коміті `7f245a3`. Remote не налаштований, `git push` не виконувався.
 - У `.gitignore` додано виключення для локальних Python-середовищ, AWS/Syndicate-конфігурації, `.env`-варіантів і Terraform plan-файлів.
-- Підготовлено сумісні інструменти без заміни глобальних Node/Python: Node.js 24.16.0 у `%LOCALAPPDATA%\Programs\marathon-tools`, .NET SDK 10.0.403 у `%USERPROFILE%\.dotnet`, Python 3.11.9 встановлено поруч із Python 3.13.5.
-- `dotnet test .\restaurant-backend-app.sln`: 141 passed, 0 failed, 0 skipped. Є NuGet advisory та compiler warnings, зафіксовані в аудиті.
-- Запущено `npm ci` у frontend; результат ще очікується.
+- Підготовлено сумісні інструменти без заміни глобальних Node/Python: Node.js 24.16.0 у `%LOCALAPPDATA%\Programs\marathon-tools`, .NET SDK 10.0.403 у `%USERPROFILE%\.dotnet`, Python 3.11.9 поруч із Python 3.13.5.
+- Backend group pre-order розширено owner API, власною сесією, меню, редагуванням owner-кошика, видаленням guest і консолідованим submit.
+- Frontend має нову Group Order сторінку, маршрут із картки customer reservation, учасників/суми/статуси, додавання й видалення власних страв, видалення guest і submit.
+- Локальний Angular dev server запущено на `http://127.0.0.1:4200/`; головна сторінка відкривається в браузері. Наявний dev API `https://eknqcvq3l1.execute-api.us-west-2.amazonaws.com/develop` відповідає `200` на `GET /locations`, тому базовий застосунок можна переглядати локально.
+- Виправлено локальний `project_path` у `.syndicate-config-restaurant-backend-app/syndicate.yml` та очевидний зайвий символ в імені artifacts bucket.
+- Terraform: `init -backend=false`, `validate` і `fmt -check` пройшли; створено `docs/DEPLOYMENT_RUNBOOK.md` з командами, перевірками та застереженнями щодо витрат.
+
+## Перевірки
+
+- Backend: **148 passed, 0 failed** (`dotnet test`). Є NuGet security warnings для `SixLabors.ImageSharp` 3.1.12.
+- Цільові frontend-тести group-order сервісу, сторінки та входу з картки бронювання: **13 passed**.
+- Production build Angular проходить; initial bundle ~790 kB, перевищує warning budget 500 kB, але нижче error budget 1 MB.
+- Повний frontend suite: **201 passed, 53 failed із 254**. Це переважно давні проблеми тестових stub-ів: `spyOnProperty`, відсутні Angular providers/required inputs. Повний suite не можна позначати як зелений.
+- `deployment_resources.json` і `lambda_config.json` коректно парсяться як JSON; нові маршрути зареєстровані в `RouteRegistry`.
 
 ## Не виконувалося
 
-- AWS identity/profile check, Terraform init/plan/apply/destroy, Syndicate deploy, AWS resource creation.
-- GitHub repo creation, git remote або push.
-- Локальний запуск Angular у браузері; frontend unit/build ще не перевірені.
-- Реалізація додаткової фічі ще не розпочата.
+- AWS identity/profile check успішно не пройшов: `aws sts get-caller-identity` повертає `NoCredentials`. AWS CLI 2.39.3 і Terraform 1.16.6 встановлені.
+- Terraform init/plan/apply/destroy, Syndicate deploy, створення AWS-ресурсів не виконувалися.
+- GitHub repo creation, git remote або push не виконувалися.
+- Реальний end-to-end виклик нових API не перевірений: локального HTTP-хоста backend немає, а AWS API ще не оновлений нашим кодом.
 
 ## Наступні кроки
 
-1. Дочекатися результату `npm ci`; виконати Angular build/unit tests та відкрити локальний frontend.
-2. Реалізувати Favorites на Angular і backend із прив’язкою до авторизованого користувача, DynamoDB persistence та тестами.
-3. Підготувати безпечний AWS plan; перед будь-яким створенням ресурсів отримати підтвердження користувача.
-4. Завершити сайт, перевірити його та підготувати посилання для анкети до 4 листопада включно.
+1. Отримати від користувача AWS-доступ (профіль/credentials) і підтвердження на створення ресурсів.
+2. Виконати `terraform init/plan`, оцінити витрати, після підтвердження — `apply`.
+3. Задеплоїти backend через Syndicate, отримати API URL, зібрати frontend і завантажити в S3/CloudFront.
+4. Перевірити груповий сценарій end-to-end на розгорнутому середовищі.
+5. Додати посилання на код і deployed app у `docs/EPAM_SUBMISSION.md`; узгодити публікацію коду.
+6. За потреби окремо виправити legacy frontend test stubs; 13 цільових group-order тестів уже проходять.
