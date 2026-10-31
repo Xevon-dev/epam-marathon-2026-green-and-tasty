@@ -22,9 +22,9 @@
 ## Перевірки
 
 - Backend: **148 passed, 0 failed** (`dotnet test`). Є NuGet security warnings для `SixLabors.ImageSharp` 3.1.12.
-- Цільові frontend-тести group-order сервісу, сторінки та входу з картки бронювання: **13 passed**.
+- Цільові frontend-тести group-order сервісу, сторінки та входу з картки бронювання: **14 passed**.
 - Production build Angular проходить; initial bundle ~790 kB, перевищує warning budget 500 kB, але нижче error budget 1 MB.
-- Повний frontend suite (останній запуск): **208 passed, 46 failed із 254**. 34 з 46 — це той самий `spyOnProperty(FileReader.prototype, 'result'/'readyState')`, який падає на non-configurable native getter; решта — давні `should create` без потрібних providers/inputs і застарілий `AppComponent` title. У попередньому запуску було 53 failed, тобто частина legacy-тестів нестабільна; повний suite не можна позначати як зелений.
+- Повний frontend suite (останній запуск): **209 passed, 46 failed із 255**. 34 з 46 — це той самий `spyOnProperty(FileReader.prototype, 'result'/'readyState')`, який падає на non-configurable native getter; решта — давні `should create` без потрібних providers/inputs і застарілий `AppComponent` title. У попередніх запусках було 53 і 46 failed, тобто частина legacy-тестів нестабільна; повний suite не можна позначати як зелений.
 - `deployment_resources.json` і `lambda_config.json` коректно парсяться як JSON; нові маршрути зареєстровані в `RouteRegistry`.
 
 ## Не виконувалося
@@ -41,4 +41,4 @@
 3. Задеплоїти backend через Syndicate, отримати API URL, зібрати frontend і завантажити в S3/CloudFront.
 4. Перевірити груповий сценарій end-to-end на розгорнутому середовищі.
 5. Додати посилання на код і deployed app у `docs/EPAM_SUBMISSION.md`; узгодити публікацію коду.
-6. За потреби окремо виправити legacy frontend test stubs; 13 цільових group-order тестів уже проходять.
+6. За потреби окремо виправити legacy frontend test stubs; 14 цільових group-order тестів уже проходять.

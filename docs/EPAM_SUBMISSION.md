@@ -35,9 +35,9 @@
 ## Статус перевірок
 
 - Backend unit-тести: **148 passed, 0 failed**.
-- Цільові frontend-тести group-order сервісу/сторінки та входу з бронювання: **13 passed**.
+- Цільові frontend-тести group-order сервісу/сторінки та входу з бронювання: **14 passed**.
 - Production build: проходить; initial bundle ~790 kB і перевищує warning budget 500 kB, але не 1 MB error budget.
-- Повний frontend suite (останній запуск): **208 passed, 46 failed із 254**. 34 з 46 — один і той самий `spyOnProperty` на non-configurable `FileReader.prototype`; решта — давні `should create` без providers/inputs. Частина legacy-тестів нестабільна між запусками; повний suite поки не зелений.
+- Повний frontend suite (останній запуск): **209 passed, 46 failed із 255**. 34 з 46 — один і той самий `spyOnProperty` на non-configurable `FileReader.prototype`; решта — давні `should create` без providers/inputs. Частина legacy-тестів нестабільна між запусками; повний suite поки не зелений.
 - AWS deployment та реальний API: **ще не виконані**. Покроковий план — `docs/DEPLOYMENT_RUNBOOK.md`; потрібні AWS credentials і явне підтвердження на створення ресурсів.
 
 ## Текст для фінальної анкети
