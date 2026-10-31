@@ -17,17 +17,18 @@
 - Terraform: `init -backend=false`, `validate` і `fmt -check` пройшли; створено `docs/DEPLOYMENT_RUNBOOK.md` з командами, перевірками та застереженнями щодо витрат.
 - Створено `docs/DEMO_SCRIPT.md` — покроковий сценарій показу фічі для себе та перевіряючих.
 - Виявлено й виправлено дублікати трьох API Gateway-маршрутів у `deployment_resources.json`; `ApiRoutes.md` узгоджено з фактичними response-моделями.
+- Виявлено й виправлено auth-регресію: `tokenInterceptor` пропускав усі URL із `/guest/`, включно з owner-маршрутами `/guest/groups/.../sessions`, які захищені Cognito. Тепер ці owner-маршрути отримують `Authorization`, а справжні гостьові — ні; додано regression-тести.
 - CI workflow `.github/workflows/deploy.yml` оновлено з .NET 8 на .NET 10 відповідно до цільової версії backend.
 - AWS Syndicate 1.21.3 встановлено в локальний `syndicate_venv` (Python 3.11). Спроба `syndicate build` зупинилася на `NoCredentialsError`: Syndicate потребує AWS-доступ навіть для build, тому пакування перевіримо після надання credentials.
 - `dotnet publish` для `APIHandler.csproj` у конфігурації Release успішний: згенеровано `APIHandler.dll` і залежності, придатні для Lambda-пакета. Залишилися лише попередження NuGet/компілятора, не помилки.
-- Усі зміни feature зафіксовано локальним комітом `826cc98` у гілці `feature/group-preorder-owner`; remote і push відсутні.
+- Усі зміни зафіксовано локальними комітами в гілці `feature/group-preorder-owner`; remote і push відсутні.
 
 ## Перевірки
 
 - Backend: **148 passed, 0 failed** (`dotnet test`). Є NuGet security warnings для `SixLabors.ImageSharp` 3.1.12.
-- Цільові frontend-тести group-order сервісу, сторінки та входу з картки бронювання: **14 passed**.
+- Цільові frontend-тести group-order сервісу, сторінки, входу з картки бронювання та auth-регресії: **20 passed**.
 - Production build Angular проходить; initial bundle ~790 kB, перевищує warning budget 500 kB, але нижче error budget 1 MB.
-- Повний frontend suite (останній запуск): **209 passed, 46 failed із 255**. 34 з 46 — це той самий `spyOnProperty(FileReader.prototype, 'result'/'readyState')`, який падає на non-configurable native getter; решта — давні `should create` без потрібних providers/inputs і застарілий `AppComponent` title. У попередніх запусках було 53 і 46 failed, тобто частина legacy-тестів нестабільна; повний suite не можна позначати як зелений.
+- Повний frontend suite (останній повний запуск до додавання 4 regression-тестів): **209 passed, 46 failed із 255**. 34 з 46 — це той самий `spyOnProperty(FileReader.prototype, 'result'/'readyState')`, який падає на non-configurable native getter; решта — давні `should create` без потрібних providers/inputs і застарілий `AppComponent` title. У попередніх запусках було 53 і 46 failed, тобто частина legacy-тестів нестабільна; повний suite не можна позначати як зелений.
 - `deployment_resources.json` і `lambda_config.json` коректно парсяться як JSON; нові маршрути зареєстровані в `RouteRegistry`.
 
 ## Не виконувалося
@@ -44,4 +45,4 @@
 3. Задеплоїти backend через Syndicate, отримати API URL, зібрати frontend і завантажити в S3/CloudFront.
 4. Перевірити груповий сценарій end-to-end на розгорнутому середовищі.
 5. Додати посилання на код і deployed app у `docs/EPAM_SUBMISSION.md`; узгодити публікацію коду.
-6. За потреби окремо виправити legacy frontend test stubs; 14 цільових group-order тестів уже проходять.
+6. За потреби окремо виправити legacy frontend test stubs; 20 цільових тестів group-order і auth-регресії вже проходять.

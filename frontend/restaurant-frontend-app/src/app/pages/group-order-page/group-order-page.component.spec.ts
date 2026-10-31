@@ -93,4 +93,40 @@ describe('GroupOrderPageComponent', () => {
     expect(component.errorMessage).toContain('Could not load group-order participants');
     expect(component.isLoading).toBeFalse();
   });
+
+  it('adds and removes owner dishes through the group service', () => {
+    groupPreorderService.addOwnerDish$.and.returnValue(of({ message: 'added' }));
+    groupPreorderService.removeOwnerDish$.and.returnValue(of({ message: 'removed' }));
+
+    component.addOwnerDish({ id: 'dish-1', name: 'Soup', price: 10, selectable: true } as any);
+    expect(groupPreorderService.addOwnerDish$).toHaveBeenCalledOnceWith('group-1', 'dish-1');
+
+    component.removeOwnerDish('dish-1');
+    expect(groupPreorderService.removeOwnerDish$).toHaveBeenCalledOnceWith('group-1', 'dish-1');
+  });
+
+  it('submits the owner basket when it contains dishes', () => {
+    const ownerDish = { id: 'dish-1', name: 'Soup', price: 10, selectable: true } as any;
+    const snapshot: GroupOrderSnapshot = {
+      participants: [
+        {
+          id: 'owner-1',
+          type: 'Owner',
+          name: 'You (owner)',
+          items: [{ dish: ownerDish, quantity: 1 }],
+          total: 10,
+          isSubmitted: false,
+        },
+        initialSnapshot.participants[1],
+      ],
+      total: 34,
+    };
+    groupPreorderService.getSessions$.and.returnValue(of(snapshot));
+    groupPreorderService.submitOwnerSession$.and.returnValue(of({ message: 'submitted' }));
+
+    component.load();
+    component.submitOwnerSession();
+
+    expect(groupPreorderService.submitOwnerSession$).toHaveBeenCalledOnceWith('group-1');
+  });
 });

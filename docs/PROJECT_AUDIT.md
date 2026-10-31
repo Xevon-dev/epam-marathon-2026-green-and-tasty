@@ -91,7 +91,7 @@ dotnet test .\restaurant-backend-app.sln
 - `dotnet test .\restaurant-backend-app.sln` після розробки group-order backend — **148 пройдено, 0 помилок**; залишаються попередження компілятора і вразливих NuGet залежностей.
 - `npm ci` завершився: 635 пакетів встановлено; npm повідомив про 57 advisory (37 moderate, 17 high, 3 critical). `npm audit fix` без аналізу не запускався.
 - Production build пройшов, bundle placeholder check успішний. Initial bundle близько 790 kB; перевищує Angular warning budget 500 kB, але нижче 1 MB error budget.
-- Цільові frontend-тести group-order сторінки/API та входу з картки бронювання: **14 passed**. Останній повний suite: **209/255 passed, 46 failed**; 34 з них — той самий `spyOnProperty` на non-configurable `FileReader.prototype`, решта — давні `should create` без providers/inputs.
+- Цільові frontend-тести group-order сторінки/API, входу з картки бронювання та auth-регресії: **20 passed**. Останній повний suite до додавання 4 regression-тестів: **209/255 passed, 46 failed**; 34 з них — той самий `spyOnProperty` на non-configurable `FileReader.prototype`, решта — давні `should create` без providers/inputs.
 - Terraform `init -backend=false`, `validate` і `fmt -check` пройшли; `deployment_resources.json` перевірено на валідність і дублікати ключів. AWS-команди, Terraform plan/apply і deployment не виконувалися.
 
 ## План для технічної частини 3-го рівня

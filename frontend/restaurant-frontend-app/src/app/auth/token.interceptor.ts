@@ -20,7 +20,11 @@ export const tokenInterceptor: HttpInterceptorFn = (
   // IMPORTANT: do not modify Guest endpoints at all.
   // Guest flow uses a different token (guest session token) and we must not touch the body.
   // Otherwise we break POST /guest/sessions payload.
-  if (req.url.includes('/guest/')) {
+  // Owner group-session routes also live under /guest/groups/, but they require Cognito.
+  const isOwnerGroupSessionsEndpoint =
+    req.url.includes('/guest/groups/') && req.url.includes('/sessions');
+
+  if (req.url.includes('/guest/') && !isOwnerGroupSessionsEndpoint) {
     return next(req).pipe(
       catchError((error: HttpErrorResponse) => {
         console.log(error);
