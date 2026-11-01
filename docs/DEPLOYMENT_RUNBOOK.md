@@ -1,16 +1,18 @@
 # Runbook: розгортання Green & Tasty в AWS
 
-> Статус: **не виконано**. AWS-команди не запускалися, ресурси не створювалися.
+> Статус: **не розгорнуто**. Перевірки доступу завершувались `NoCredentials`; ресурси не створювалися.
+> **Для поточного AWS Projects-проєкту використовуй `docs/AWS_PROJECT_SETUP.md`.**
+> Наведений нижче початковий runbook для `us-west-2` не можна виконувати без адаптації:
+> поточний проєкт закріплений за `eu-north-1`.
 > Перед `terraform apply` і `syndicate deploy` потрібне явне підтвердження власника акаунта.
-> Орієнтовний час: 30–60 хвилин. Орієнтовна вартість демо: кілька центів–кілька доларів
-> залежно від часу роботи CloudFront, API Gateway, Lambda і DynamoDB; точну суму дасть
-> `terraform plan`/AWS Budget після налаштування credentials.
+> Час і витрати залежать від доступів, ресурсів та використання. `terraform plan` показує
+> зміни ресурсів, а не ціну; AWS Budget відстежує витрати, але не гарантує їх обмеження.
 
 ## 0. Що вже готово
 
 - Terraform: `terraform init -backend=false` і `terraform validate` пройшли; `terraform fmt -check` чистий.
 - Backend: 148 unit-тестів проходять; нові маршрути зареєстровані в `RouteRegistry`.
-- Frontend: production build проходить; 13 цільових тестів проходять.
+- Frontend: production build проходить; 20 цільових тестів проходять.
 - Syndicate: локальний `project_path` виправлено; artifacts bucket приведено до `marathon2026-restaurant-artifacts-747482682250`.
 - AWS CLI 2.39.3 і Terraform 1.16.6 встановлені.
 
