@@ -1,6 +1,7 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit, inject } from '@angular/core';
 import { CurrencyPipe } from '@angular/common';
 import { ActivatedRoute, RouterLink } from '@angular/router';
+import { catchError, forkJoin, finalize, of, switchMap } from 'rxjs';
 import {
   GroupOrderParticipant,
   GroupOrderSnapshot,
@@ -20,6 +21,7 @@ import { GroupPreorderService } from '@app/services/guest-sessions/group-preorde
 export class GroupOrderPageComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly groupPreorderService = inject(GroupPreorderService);
+  private readonly changeDetector = inject(ChangeDetectorRef);
 
   reservationId = '';
   ownerSession: OwnerSessionResponse | null = null;
@@ -69,42 +71,55 @@ export class GroupOrderPageComponent implements OnInit {
 
     this.isLoading = true;
     this.errorMessage = '';
-    this.groupPreorderService.getOwnerSession$(this.reservationId).subscribe({
-      next: (ownerSession) => {
-        this.ownerSession = ownerSession;
-        this.groupSubmitted = ownerSession.status === 'Submitted';
-        if (this.groupSubmitted) this.successMessage = 'This group pre-order has already been sent to the restaurant.';
-        this.loadGroupData(ownerSession);
-      },
-      error: () => {
-        this.errorMessage = 'Could not open the group order. Make sure the reservation is active.';
-        this.isLoading = false;
-      },
-    });
-  }
+    this.changeDetector.markForCheck();
 
-  loadGroupData(ownerSession: OwnerSessionResponse): void {
-    this.groupPreorderService.getSessions$(ownerSession.groupReservationId).subscribe({
-      next: (snapshot) => {
-        this.snapshot = snapshot;
-        this.isLoading = false;
-      },
-      error: () => {
-        this.errorMessage = 'Could not load group-order participants.';
-        this.isLoading = false;
-      },
-    });
+    this.groupPreorderService
+      .getOwnerSession$(this.reservationId)
+      .pipe(
+        switchMap((ownerSession) => {
+          this.ownerSession = ownerSession;
+          this.groupSubmitted = ownerSession.status === 'Submitted';
+          if (this.groupSubmitted) {
+            this.successMessage = 'This group pre-order has already been sent to the restaurant.';
+          }
 
-    if (ownerSession.status === 'Submitted') return;
+          const menu$ = ownerSession.status === 'Submitted'
+            ? of(null)
+            : this.groupPreorderService.getMenu$(ownerSession.groupReservationId).pipe(
+                catchError(() => {
+                  this.errorMessage = 'Could not load the menu for this group order.';
+                  return of(null);
+                }),
+              );
 
-    this.groupPreorderService.getMenu$(ownerSession.groupReservationId).subscribe({
-      next: (menu) => {
-        this.menuDishes = Object.values(menu.dishes).flat();
-      },
-      error: () => {
-        this.errorMessage = 'Could not load the menu for this group order.';
-      },
-    });
+          return forkJoin({
+            snapshot: this.groupPreorderService.getSessions$(ownerSession.groupReservationId),
+            menu: menu$,
+          });
+        }),
+        finalize(() => {
+          this.isLoading = false;
+          this.changeDetector.markForCheck();
+        }),
+      )
+      .subscribe({
+        next: ({ snapshot, menu }) => {
+          if (!snapshot || !Array.isArray(snapshot.participants)) {
+            this.errorMessage = 'The server returned an invalid group-order snapshot.';
+            return;
+          }
+
+          this.snapshot = snapshot;
+          this.menuDishes = menu?.dishes ? Object.values(menu.dishes).flat() : [];
+          this.changeDetector.markForCheck();
+        },
+        error: () => {
+          this.errorMessage = this.ownerSession
+            ? 'Could not load group-order participants.'
+            : 'Could not open the group order. Make sure the reservation is active.';
+          this.changeDetector.markForCheck();
+        },
+      });
   }
 
   addOwnerDish(dish: GuestMenuDish): void {

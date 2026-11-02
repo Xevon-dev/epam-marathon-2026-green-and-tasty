@@ -57,6 +57,7 @@ describe('GroupOrderPageComponent', () => {
 
   it('loads owner data and displays participant totals', () => {
     expect(groupPreorderService.getOwnerSession$).toHaveBeenCalledOnceWith('reservation-1');
+    expect(component.isLoading).toBeFalse();
     expect(component.snapshot?.total).toBe(24);
     expect(fixture.nativeElement.textContent).toContain('Marta');
     expect(fixture.nativeElement.textContent).toContain('Your group order');
