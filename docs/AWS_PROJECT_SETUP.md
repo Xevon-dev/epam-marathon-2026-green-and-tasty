@@ -97,7 +97,9 @@ Terraform provider не зміг читати `marathon` напряму; сум�
 AWS Support case створено: Account and billing / Account / Other Account Issues / General question / Web. Очікуємо перевірку CloudFront.
 Backend Syndicate розгорнуто: API `https://kfhwimu435.execute-api.eu-north-1.amazonaws.com/develop`;
 трьома перевірками підтверджено API response. Додано demo location, 3 tables, 4 dishes.
-Production frontend build з новим API запускається/перевіряється; файли не завантажені.
+Production frontend build із новим API успішний. Тимчасовий public S3 website fallback:
+`http://restaurant-backend-dev-swagger-ui-387143718645.s3-website.eu-north-1.amazonaws.com/app/`;
+посилання використовує HTTP, поки AWS не підтвердить CloudFront.
 Не повторювати apply без нового plan. Якщо Support не розблокує CloudFront у строк,
 розглянути після погодження публічний S3 static website (HTTP, без CloudFront).
 Budget без email не надсилає сповіщення й не є лімітом витрат. Тариф не змінювався.
