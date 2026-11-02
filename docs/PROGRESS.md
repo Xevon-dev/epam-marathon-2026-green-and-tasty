@@ -18,7 +18,7 @@
 - AWS Syndicate успішно розгорнув API Gateway (`kfhwimu435`, stage `develop`), три .NET 10 Lambda, 13 DynamoDB tables та Swagger UI. API URL: `https://kfhwimu435.execute-api.eu-north-1.amazonaws.com/develop`. `GET /locations` і `/dishes` спершу повертали `200 []`; owner sessions endpoint без Cognito token повертає `401` (очікувано).
 - Через IAM/boto3 додано лише демонстраційні дані без персональних даних: локація `demo-location-nov-2026`, три столи (capacity 2/4/6), чотири доступні страви. Перевірено через `GET /locations`, `/locations/{id}/dishes` та `/available-tables`.
 - AWS Free plan API після backend deploy показав `ACTIVE`, $140 credits, дата завершення 30 квітня 2027. Раніше показував $100; зміна балансу може бути отриманими марафонськими кредитами, не можна трактувати як підтверджений нульовий usage cost.
-- Production frontend build з новим API URL запущено у фоні. Файли ще не завантажувалися до frontend bucket.
+- Production frontend build успішний із новим API URL `https://kfhwimu435.execute-api.eu-north-1.amazonaws.com/develop`; bundle check пройшов, конфігураційних placeholder немає. Є нефатальні наявні bundle/CSS/CommonJS budget warnings. Файли ще не завантажувалися до frontend bucket.
 - Повторно звірено вимоги рівнів 1–3, ресторанну тематику й фінальні посилання із субтитрами; уточнено приблизний формат фінального тесту в `docs/EPAM_REQUIREMENTS.md`.
 - Backend розгорнутий. Frontend ще не опублікований через CloudFront verification; ще потрібно засіяти тестові дані, опублікувати frontend і провести E2E після готовності хостингу.
 

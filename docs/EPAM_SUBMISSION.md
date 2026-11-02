@@ -39,6 +39,7 @@
 - Production build: проходить; initial bundle ~790 kB і перевищує warning budget 500 kB, але не 1 MB error budget.
 - Повний frontend suite (останній повний запуск до додавання 4 regression-тестів): **209 passed, 46 failed із 255**. 34 з 46 — один і той самий `spyOnProperty` на non-configurable `FileReader.prototype`; решта — давні `should create` без providers/inputs. Частина legacy-тестів нестабільна між запусками; повний suite поки не зелений.
 - Backend/API **розгорнуті й відповідають**; створені демонстраційні дані. Frontend ще не опублікований: CloudFront чекає на AWS account verification (support case відкритий). Terraform створив 34 із 36 запланованих ресурсів. Актуальний статус — `docs/AWS_PROJECT_SETUP.md`.
+- Production frontend успішно зібраний із новим API URL; bundle check підтвердив відсутність placeholder. Сайт ще не завантажено в S3, бо не завершено CloudFront.
 
 ## Текст для фінальної анкети
 
