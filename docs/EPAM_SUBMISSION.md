@@ -38,7 +38,7 @@
 - Цільові frontend-тести group-order сервісу/сторінки, входу з бронювання та auth-регресії: **20 passed**.
 - Production build: проходить; initial bundle ~790 kB і перевищує warning budget 500 kB, але не 1 MB error budget.
 - Повний frontend suite (останній повний запуск до додавання 4 regression-тестів): **209 passed, 46 failed із 255**. 34 з 46 — один і той самий `spyOnProperty` на non-configurable `FileReader.prototype`; решта — давні `should create` без providers/inputs. Частина legacy-тестів нестабільна між запусками; повний suite поки не зелений.
-- AWS deployment та реальний API: **ще не виконані**. Вхід у проєкт успішний, попередній Terraform plan — 36 створень. Актуальна інструкція для Stockholm — `docs/AWS_PROJECT_SETUP.md`; попередній runbook для Oregon потребує адаптації.
+- Backend/API **розгорнуті й відповідають**; створені демонстраційні дані. Frontend ще не опублікований: CloudFront чекає на AWS account verification (support case відкритий). Terraform створив 34 із 36 запланованих ресурсів. Актуальний статус — `docs/AWS_PROJECT_SETUP.md`.
 
 ## Текст для фінальної анкети
 

@@ -38,20 +38,22 @@ aws login --region eu-north-1 --profile marathon
 Назва `marathon` — запропонована назва локального профілю; можна погодити іншу.
 Ключі вручну не створювати й не надсилати в чат.
 
-Після успішного входу:
+Після успішного входу AWS CLI використовує `marathon`. Terraform AWS provider
+не прочитав browser `login_session`, тому для SDK-інструментів налаштувати сумісний
+локальний профіль `marathon-tools`:
 
 ```powershell
-$env:AWS_PROFILE = "marathon"
+aws configure set credential_process "aws configure export-credentials --profile marathon --format process" --profile marathon-tools
+aws configure set region eu-north-1 --profile marathon-tools
+$env:AWS_PROFILE = "marathon-tools"
 $env:AWS_REGION = "eu-north-1"
 $env:AWS_DEFAULT_REGION = "eu-north-1"
-aws sts get-caller-identity --profile marathon
+aws sts get-caller-identity --profile marathon-tools
 ```
 
 Перевірити `Account = 387143718645`. Вхід лише налаштовує локальний доступ.
 Agent Toolkit/MCP не є обов'язковим для наявного Terraform/Syndicate deployment.
-Якщо Terraform або Syndicate не підтримує `login_session`, налаштувати окремий
-`credential_process` профіль за офіційною CLI-документацією, а не копіювати токени
-в репозиторій. Сумісність цих інструментів із входом ще не перевірено.
+Не копіювати тимчасові токени в репозиторій.
 
 ## Подальше розгортання
 
@@ -77,7 +79,7 @@ Agent Toolkit/MCP не є обов'язковим для наявного Terraf
 6. Завантажити frontend у фактичний bucket із Terraform і перевірити CloudFront.
 7. Підготувати тестові дані ресторану та пройти `docs/DEMO_SCRIPT.md` end-to-end.
 
-Оновлений статус: вхід і STS успішні. API підтвердив активний Free plan із $100.
+Оновлений статус: вхід і STS успішні. API підтвердив активний Free plan із $140 кредитів (перевірено після deployment; раніше API показував $100).
 Для сумісності створено локальний профіль `marathon-tools` із:
 
 ```ini
@@ -86,9 +88,19 @@ region = eu-north-1
 ```
 
 Для Terraform і Syndicate використовувати `$env:AWS_PROFILE = "marathon-tools"`.
-CLI/boto3 перевірено. Попередній plan у тимчасовій копії з локальним backend
-успішний (36 створень); перед apply потрібен новий plan із S3 backend у робочому
-каталозі. Створення ресурсів і deployment ще не виконано. Тариф не змінювався.
+Terraform provider не зміг читати `marathon` напряму; сумісний profile пройшов STS.
+Створено приватний state bucket `restaurant-terraform-state-387143718645` у
+`eu-north-1` із versioning, блокуванням публічного доступу та AES256 encryption.
+Робочий plan: 36 створень, 0 змін, 0 видалень. Apply створив 34 ресурси, але AWS
+заблокував CloudFront Distribution до account verification; frontend bucket policy
+залежить від нього й не створена. Інші створені ресурси збережені у Terraform state.
+AWS Support case створено: Account and billing / Account / Other Account Issues / General question / Web. Очікуємо перевірку CloudFront.
+Backend Syndicate розгорнуто: API `https://kfhwimu435.execute-api.eu-north-1.amazonaws.com/develop`;
+трьома перевірками підтверджено API response. Додано demo location, 3 tables, 4 dishes.
+Production frontend build з новим API запускається/перевіряється; файли не завантажені.
+Не повторювати apply без нового plan. Якщо Support не розблокує CloudFront у строк,
+розглянути після погодження публічний S3 static website (HTTP, без CloudFront).
+Budget без email не надсилає сповіщення й не є лімітом витрат. Тариф не змінювався.
 
 ## Джерела
 

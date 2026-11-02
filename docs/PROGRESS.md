@@ -11,8 +11,16 @@
 - Виконано попередній Terraform plan в окремій копії конфігурації з локальним backend (`%LOCALAPPDATA%/Temp/opencode/marathon-terraform-plan`), щоб не створювати S3 state bucket до перегляду плану: **36 add, 0 change, 0 destroy**. Це лише Terraform-частина; Lambda/API/DynamoDB розгортає Syndicate окремо. Не застосовувати цей тимчасовий plan: перед реальним apply потрібен plan із робочим S3 backend.
 - Виправлено `infra/terraform/monitoring.tf`: Budget більше не створює notifications із порожнім списком отримувачів. Без `alert_emails` бюджет видимий у Billing, але листи не надсилаються. `fmt -check`, `validate` і повторний plan успішні.
 - План розглянуто: 36 Terraform ресурсів, `0 change`, `0 destroy`. План лише перелічує ресурси й не оцінює вартість. Виявлено, що Syndicate S3 resource повторно використовує наявний bucket; код Syndicate перевіряє існування й не викликає повторне створення. Terraform має налаштувати цей Swagger bucket до Syndicate.
+- Після дозволу користувача створено приватний S3 state bucket `restaurant-terraform-state-387143718645` у `eu-north-1`; увімкнено versioning, блокування публічного доступу й AES256 encryption. Terraform init і робочий plan успішні: **36 add, 0 change, 0 destroy**.
+- Terraform apply частково завершився: зафіксовано **34 ресурси** у remote state. AWS відхилив CloudFront Distribution із `AccessDenied: Your account must be verified before you can add new CloudFront resources`; distribution та залежна frontend bucket policy не створені. Інші 34 ресурси (Cognito, S3, SQS, IAM, schedule, monitoring, budget) у Terraform state.
+- До вирішення CloudFront verification не повторювати apply без нового plan. Можливі шляхи: AWS Support account verification або перейти на публічний S3 static website лише для frontend bundle (HTTP, без CloudFront); це змінює hosting архітектуру й потребує окремого узгодження.
+- AWS Support case створено користувачем: Account and billing / Account / Other Account Issues / General question / Web. Очікуємо відповідь; користувач не погоджував upgrade.
+- AWS Syndicate успішно розгорнув API Gateway (`kfhwimu435`, stage `develop`), три .NET 10 Lambda, 13 DynamoDB tables та Swagger UI. API URL: `https://kfhwimu435.execute-api.eu-north-1.amazonaws.com/develop`. `GET /locations` і `/dishes` спершу повертали `200 []`; owner sessions endpoint без Cognito token повертає `401` (очікувано).
+- Через IAM/boto3 додано лише демонстраційні дані без персональних даних: локація `demo-location-nov-2026`, три столи (capacity 2/4/6), чотири доступні страви. Перевірено через `GET /locations`, `/locations/{id}/dishes` та `/available-tables`.
+- AWS Free plan API після backend deploy показав `ACTIVE`, $140 credits, дата завершення 30 квітня 2027. Раніше показував $100; зміна балансу може бути отриманими марафонськими кредитами, не можна трактувати як підтверджений нульовий usage cost.
+- Production frontend build з новим API URL запущено у фоні. Файли ще не завантажувалися до frontend bucket.
 - Повторно звірено вимоги рівнів 1–3, ресторанну тематику й фінальні посилання із субтитрами; уточнено приблизний формат фінального тесту в `docs/EPAM_REQUIREMENTS.md`.
-- Створення AWS-ресурсів/apply/deploy ще не виконано. Перед запуском узгодити конкретний план; оцінка Terraform не включає ціни й не перевіряє дозволи на всі операції створення.
+- Backend розгорнутий. Frontend ще не опублікований через CloudFront verification; ще потрібно засіяти тестові дані, опублікувати frontend і провести E2E після готовності хостингу.
 
 ### Попередня підготовка
 
