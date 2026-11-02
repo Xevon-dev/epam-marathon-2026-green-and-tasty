@@ -1,4 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { HttpErrorResponse } from '@angular/common/http';
 import { ActivatedRoute, provideRouter } from '@angular/router';
 import { of, throwError } from 'rxjs';
 import { GroupOrderSnapshot } from '@app/models/reservations/group-preorder.model';
@@ -84,6 +85,24 @@ describe('GroupOrderPageComponent', () => {
     expect(groupPreorderService.submitGroup$).toHaveBeenCalledOnceWith('group-1', 'reservation-1');
     expect(component.isGroupSubmitted).toBeTrue();
     expect(component.submittedItems).toEqual([{ dishId: 'dish-1', quantity: 2 }]);
+  });
+
+  it('clears the group submit state and guides the owner when no pre-order exists', () => {
+    groupPreorderService.submitGroup$.and.returnValue(
+      throwError(
+        () =>
+          new HttpErrorResponse({
+            status: 400,
+            statusText: 'Bad Request',
+            error: { error: 'Pre-order for the reservation was not found.' },
+          }),
+      ),
+    );
+
+    component.submitGroupOrder();
+
+    expect(component.isSubmittingGroup).toBeFalse();
+    expect(component.errorMessage).toContain('Create and submit a regular pre-order');
   });
 
   it('shows a useful error when group data cannot be loaded', () => {

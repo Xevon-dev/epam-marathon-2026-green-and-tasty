@@ -1,5 +1,6 @@
 import { ChangeDetectorRef, Component, OnInit, inject } from '@angular/core';
 import { CurrencyPipe } from '@angular/common';
+import { HttpErrorResponse } from '@angular/common/http';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { catchError, forkJoin, finalize, of, switchMap } from 'rxjs';
 import {
@@ -10,6 +11,7 @@ import {
 } from '@app/models/reservations/group-preorder.model';
 import { GuestMenuDish } from '@app/services/guest-sessions/guest-sessions.service';
 import { GroupPreorderService } from '@app/services/guest-sessions/group-preorder.service';
+import { getServerErrorMessage } from '@app/shared/helpers/http-error-helpers';
 
 @Component({
   selector: 'app-group-order-page',
@@ -132,6 +134,7 @@ export class GroupOrderPageComponent implements OnInit {
         next: () => this.refreshSnapshot(),
         error: () => {
           this.errorMessage = `Could not add ${dish.name} to your order.`;
+          this.changeDetector.markForCheck();
         },
       });
   }
@@ -144,6 +147,7 @@ export class GroupOrderPageComponent implements OnInit {
         next: () => this.refreshSnapshot(),
         error: () => {
           this.errorMessage = 'Could not remove the dish from your order.';
+          this.changeDetector.markForCheck();
         },
       });
   }
@@ -156,10 +160,12 @@ export class GroupOrderPageComponent implements OnInit {
       next: () => {
         this.isSubmittingOwner = false;
         this.refreshSnapshot();
+        this.changeDetector.markForCheck();
       },
       error: () => {
         this.isSubmittingOwner = false;
         this.errorMessage = 'Could not submit your dishes.';
+        this.changeDetector.markForCheck();
       },
     });
   }
@@ -168,9 +174,13 @@ export class GroupOrderPageComponent implements OnInit {
     if (!this.ownerSession || participant.type !== 'Guest' || !participant.id || this.isGroupSubmitted) return;
     this.errorMessage = '';
     this.groupPreorderService.removeGuest$(this.ownerSession.groupReservationId, participant.id).subscribe({
-      next: (snapshot) => (this.snapshot = snapshot),
+      next: (snapshot) => {
+        this.snapshot = snapshot;
+        this.changeDetector.markForCheck();
+      },
       error: () => {
         this.errorMessage = `Could not remove ${participant.name} from the group order.`;
+        this.changeDetector.markForCheck();
       },
     });
   }
@@ -182,15 +192,20 @@ export class GroupOrderPageComponent implements OnInit {
     this.groupPreorderService
       .submitGroup$(this.ownerSession.groupReservationId, this.reservationId)
       .subscribe({
-      next: (items) => {
+        next: (items) => {
           this.submittedItems = items;
           this.groupSubmitted = true;
           this.successMessage = 'The combined pre-order was sent to the restaurant.';
           this.isSubmittingGroup = false;
+          this.changeDetector.markForCheck();
         },
-        error: () => {
+        error: (error: HttpErrorResponse) => {
           this.isSubmittingGroup = false;
-          this.errorMessage = 'Could not submit the group order. Check that at least one participant submitted a non-empty cart.';
+          const serverMessage = getServerErrorMessage(error);
+          this.errorMessage = serverMessage.includes('Pre-order for the reservation was not found')
+            ? 'Create and submit a regular pre-order for this reservation first, then return here to confirm the group order.'
+            : serverMessage || 'Could not submit the group order. Check that at least one participant submitted a non-empty cart.';
+          this.changeDetector.markForCheck();
         },
       });
   }
@@ -202,9 +217,13 @@ export class GroupOrderPageComponent implements OnInit {
   private refreshSnapshot(): void {
     if (!this.ownerSession) return;
     this.groupPreorderService.getSessions$(this.ownerSession.groupReservationId).subscribe({
-      next: (snapshot) => (this.snapshot = snapshot),
+      next: (snapshot) => {
+        this.snapshot = snapshot;
+        this.changeDetector.markForCheck();
+      },
       error: () => {
         this.errorMessage = 'The order was updated, but the participant list could not be refreshed.';
+        this.changeDetector.markForCheck();
       },
     });
   }
