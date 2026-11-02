@@ -35,7 +35,7 @@
 ## Статус перевірок
 
 - Backend unit-тести: **148 passed, 0 failed**.
-- Цільові frontend-тести group-order сервісу/сторінки, входу з бронювання та auth-регресії: **20 passed**.
+- Цільові frontend-тести group-order сервісу/сторінки, входу з бронювання, auth-регресії та missing-order UI: **21 passed**.
 - Production build: проходить; initial bundle ~790 kB і перевищує warning budget 500 kB, але не 1 MB error budget.
 - Повний frontend suite (останній повний запуск до додавання 4 regression-тестів): **209 passed, 46 failed із 255**. 34 з 46 — один і той самий `spyOnProperty` на non-configurable `FileReader.prototype`; решта — давні `should create` без providers/inputs. Частина legacy-тестів нестабільна між запусками; повний suite поки не зелений.
 - Backend/API **розгорнуті й відповідають**; створені демонстраційні дані. Тимчасовий frontend опублікований у S3 website (HTTP, без CloudFront/HTTPS), поки відкрите AWS Support verification case. Тимчасовий demo URL: `http://restaurant-backend-dev-swagger-ui-387143718645.s3-website.eu-north-1.amazonaws.com/app/`. Terraform створив 34 із 36 запланованих ресурсів. Актуальний статус — `docs/AWS_PROJECT_SETUP.md`.
