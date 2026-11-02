@@ -141,19 +141,16 @@ resource "aws_budgets_budget" "monthly_cost" {
   limit_unit   = "USD"
   time_unit    = "MONTHLY"
 
-  notification {
-    comparison_operator        = "GREATER_THAN"
-    threshold                  = 80
-    threshold_type             = "PERCENTAGE"
-    notification_type          = "ACTUAL"
-    subscriber_email_addresses = var.alert_emails
-  }
-
-  notification {
-    comparison_operator        = "GREATER_THAN"
-    threshold                  = 100
-    threshold_type             = "PERCENTAGE"
-    notification_type          = "FORECASTED"
-    subscriber_email_addresses = var.alert_emails
+  # AWS requires subscribers for each notification. A budget without configured
+  # alert emails remains visible in Billing, but cannot send email notifications.
+  dynamic "notification" {
+    for_each = length(var.alert_emails) > 0 ? { ACTUAL = 80, FORECASTED = 100 } : {}
+    content {
+      comparison_operator        = "GREATER_THAN"
+      threshold                  = notification.value
+      threshold_type             = "PERCENTAGE"
+      notification_type          = notification.key
+      subscriber_email_addresses = var.alert_emails
+    }
   }
 }

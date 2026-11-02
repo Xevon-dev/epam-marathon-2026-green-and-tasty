@@ -77,8 +77,18 @@ Agent Toolkit/MCP не є обов'язковим для наявного Terraf
 6. Завантажити frontend у фактичний bucket із Terraform і перевірити CloudFront.
 7. Підготувати тестові дані ресторану та пройти `docs/DEMO_SCRIPT.md` end-to-end.
 
-Не виконано: вхід, STS-перевірка нового проєкту, plan, створення ресурсів, deployment.
-Тариф не змінювався. Наступний крок потребує участі користувача в браузері.
+Оновлений статус: вхід і STS успішні. API підтвердив активний Free plan із $100.
+Для сумісності створено локальний профіль `marathon-tools` із:
+
+```ini
+credential_process = aws configure export-credentials --profile marathon --format process
+region = eu-north-1
+```
+
+Для Terraform і Syndicate використовувати `$env:AWS_PROFILE = "marathon-tools"`.
+CLI/boto3 перевірено. Попередній plan у тимчасовій копії з локальним backend
+успішний (36 створень); перед apply потрібен новий plan із S3 backend у робочому
+каталозі. Створення ресурсів і deployment ще не виконано. Тариф не змінювався.
 
 ## Джерела
 
