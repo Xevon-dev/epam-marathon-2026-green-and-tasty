@@ -91,17 +91,15 @@ region = eu-north-1
 Terraform provider не зміг читати `marathon` напряму; сумісний profile пройшов STS.
 Створено приватний state bucket `restaurant-terraform-state-387143718645` у
 `eu-north-1` із versioning, блокуванням публічного доступу та AES256 encryption.
-Робочий plan: 36 створень, 0 змін, 0 видалень. Apply створив 34 ресурси, але AWS
-заблокував CloudFront Distribution до account verification; frontend bucket policy
-залежить від нього й не створена. Інші створені ресурси збережені у Terraform state.
-AWS Support case створено: Account and billing / Account / Other Account Issues / General question / Web. Очікуємо перевірку CloudFront.
+Початковий plan: 36 створень, 0 змін, 0 видалень. Після AWS Support case
+`179360120700332` AWS схвалив account verification. Новий plan додав 2 ресурси;
+Terraform apply успішно створив CloudFront distribution і frontend bucket policy.
+Всі Terraform ресурси створено, підтримка Basic/Free лишилась без змін.
 Backend Syndicate розгорнуто: API `https://kfhwimu435.execute-api.eu-north-1.amazonaws.com/develop`;
-трьома перевірками підтверджено API response. Додано demo location, 3 tables, 4 dishes.
-Production frontend build із новим API успішний. Тимчасовий public S3 website fallback:
-`http://restaurant-backend-dev-swagger-ui-387143718645.s3-website.eu-north-1.amazonaws.com/app/`;
-посилання використовує HTTP, поки AWS не підтвердить CloudFront.
-Не повторювати apply без нового plan. Якщо Support не розблокує CloudFront у строк,
-розглянути після погодження публічний S3 static website (HTTP, без CloudFront).
+API перевірений, demo location, 3 tables, 4 dishes і waiter record засіяні.
+Production frontend побудований і завантажений у приватний CloudFront origin;
+invalidation завершена. HTTPS URL: `https://dd9nzqrfa7inx.cloudfront.net`.
+Тимчасовий S3 website fallback може лишатися до рішення прибрати його.
 Budget без email не надсилає сповіщення й не є лімітом витрат. Тариф не змінювався.
 
 ## Джерела
