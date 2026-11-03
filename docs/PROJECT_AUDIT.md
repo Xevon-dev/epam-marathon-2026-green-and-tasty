@@ -1,103 +1,58 @@
-# Аудит проєкту EPAM IT Marathon 2026
+# Аудит Green & Tasty
 
-Дата аудиту: 31 жовтня 2026 року
+Актуалізовано: **3 листопада 2026 року**.
 
-## Загальний висновок
+## Висновок
 
-Це повноцінний застосунок ресторану Green & Tasty: Angular SPA, .NET AWS Lambda backend, інфраструктура Terraform і окремий AQA-проєкт на .NET/Playwright. Backend не є Python-сервером: Python тут потрібен переважно для AWS Syndicate.
+Group Pre-Order має frontend, backend та розгорнутий AWS demo.
+Код доступний у [публічному репозиторії](https://github.com/Xevon-dev/epam-marathon-2026-green-and-tasty).
+За реалізацією покрито функціональність із `homework-backend.md`:
+учасники/суми, owner session, консолідація підтверджених кошиків і видалення гостя.
+Повну працездатність гостьового сценарію та waiter view ще потрібно підтвердити E2E.
 
-## Структура
+## Перевірені результати
 
-- `frontend/restaurant-frontend-app` — Angular-застосунок, маршрути, сторінки, сервіси HTTP, стилі та Jasmine/Karma тести.
-- `backend/restaurant-backend-app` — .NET Lambda-функції, API-обробники, сервіси, репозиторії, моделі та xUnit тести.
-- `infra/terraform` — спільна AWS-інфраструктура.
-- `aqa/restaurant-aqa-framework` — окремий фреймворк автоматизації на .NET, Reqnroll і Playwright.
-- `homework-backend.md`, `homework-aqa.md` — матеріали завдань марафону.
+- Backend: **148 passed, 0 failed**.
+- Чотири цільові frontend spec-файли: **21 passed, 0 failed**.
+- Production build проходить; initial bundle близько 790 kB, вище warning budget 500 kB, нижче error budget 1 MB.
+- Останній повний frontend suite до додавання regression-тестів: **209 passed, 46 failed із 255**.
+  34 падіння пов’язані з `spyOnProperty` на non-configurable `FileReader.prototype`,
+  інші — з legacy fixtures/providers/inputs. Це не зелений повний suite.
+- Read-only перевірки 03.11: GitHub і HTTPS frontend — 200, API страв/локацій — 200;
+  зображення та меню завантажуються в браузері.
+- Owner menu API без токена повертає 401; Group Order без входу перенаправляє на login.
+- Owner-only E2E раніше пройдено на demo; підтвердження участі гостя та waiter view відсутнє.
 
-## Архітектура та технології
+## Відомі обмеження
 
-### Frontend
+1. Group submit потребує існуючого базового **Pre-order**. Це умова `homework-backend.md:119`;
+   крок включено до [демо](DEMO_SCRIPT.md).
+2. Backend не має локального HTTP-хоста; локально запускаються unit-тести, а frontend використовує налаштований API.
+3. `GetGroupReservationStatusHandler` не перевіряє identity/guest token у handler;
+   повертає статус і кількість учасників за ID групи. Потрібен окремий перегляд доступу.
+4. Для неавторизованого owner API відповідь 401 не містить CORS-заголовка:
+   прямий запит із браузера показує network error. Це не підтверджує проблему авторизованого сценарію.
+5. У guest store залишаються debug-логи, заголовок вкладки — `RestaurantFrontendApp`.
+6. Є великі фотографії (до приблизно 11,6 MB), bundle/CSS/CommonJS warnings та legacy lint/test-проблеми.
+7. Backend dependency scan під час `dotnet test` повідомляв NU1902/NU1903.
+   Оновлення залежностей потребує окремої перевірки сумісності.
 
-- Angular 22, TypeScript, standalone-компоненти, SCSS.
-- npm lockfile; очікувана версія Node.js в `.nvmrc` — 24.16.0.
-- Angular CLI, Jasmine/Karma; наявний окремий набір компонентних та сервісних тестів.
-- Production build вимагає `BACKEND_URL`; локальний `ng serve` використовує development-конфігурацію.
-- Статичний frontend розміщується в приватному S3 bucket та роздається через CloudFront.
+## Публічні файли
 
-### Backend
+Перевірено список tracked-файлів: немає `node_modules`, build-каталогів, локальних AWS credentials,
+Terraform state чи `.env` із налаштуваннями середовища. `.env.example` — шаблон AQA.
+Пошук типових форматів AWS/GitHub-токенів, JWT та private keys у текстових змінах історії
+не дав збігів. Це перевірка за шаблонами, а не гарантія відсутності будь-яких секретів.
 
-- .NET 10 Lambda-проєкти, AWS SDK, API Gateway proxy handler.
-- AWS Syndicate збирає та розгортає Lambda stack.
-- DynamoDB використовується як основне сховище; також код інтегрується з Cognito, S3 і SQS.
-- Є xUnit/Moq unit-тести сервісів.
-- Backend не має локального HTTP-хоста/емулятора, зафіксовано у `frontend/restaurant-frontend-app/CLAUDE.md`; unit-тести можна запускати локально.
+Внутрішні account/support/billing-відомості прибрано з актуальної документації.
+Попередні коміти зберігаються в git-історії; її переписування не виконувалося.
+Авторські відомості EPAM та навчальні/AQA-матеріали збережено.
 
-### AWS / Terraform
+## CI та розгортання
 
-У Terraform описані S3 buckets, CloudFront distribution/OAC, Cognito, SQS, EventBridge, IAM, CloudWatch alarms та dashboard. Lambda і API Gateway конфігуруються AWS Syndicate. Розгортання створює реальні ресурси та потенційні витрати; Free Plan не є гарантією нульової вартості. `terraform apply`, Syndicate deploy, а також зміни чи видалення ресурсів потребують окремого підтвердження користувача.
+Автоматичні AWS deploy/apply замінено перевірками без deployment;
+нічний запуск AQA проти живого середовища прибрано. Наявність workflow не означає,
+що він уже успішно виконався на GitHub. Результати вище отримані локально та на demo.
 
-## Наявні можливості
-
-- Меню страв, фільтрація/сортування, локації.
-- Реєстрація, вхід, профіль користувача.
-- Бронювання, перегляд і зміна бронювань, інтерфейси клієнта й офіціанта.
-- Звичайні передзамовлення та відгуки.
-- Групові запрошення за посиланням, гостьові сесії, гостьове меню/кошик, надсилання кошика.
-- Звіти, повідомлення, профільні зображення.
-- Інтерфейс обраного (`Favorites`) у фронтенді та відповідних API у backend під час пошуку не знайдено.
-
-## Виявлені прогалини та ризики
-
-1. **Owner-частина групового передзамовлення реалізована.** Додано owner-маршрути, owner-сесію, owner-меню, редагування власного кошика, видалення guest і консолідований submit; у frontend є сторінка Group Order і вхід із картки бронювання. Деталі — `docs/PROGRESS.md`.
-2. **Немає локального запуску backend як вебсервера.** Підтверджено локальні unit-тести, але не звичайний локальний API.
-3. **Версії середовища.** Репозиторій очікує Node.js 24.16.0; README backend рекомендує Python 3.10–3.11 для інструментів Syndicate; Lambda-проєкти таргетять .NET 10.
-4. **AWS-регіон зафіксовано як `us-west-2`.** Це відповідає Terraform, `backend.tf`, Syndicate-конфігурації та наявному dev API. Згадка `eu-west-1` у frontend `CLAUDE.md` застаріла.
-5. **CI конфігурацію виправлено:** `.github/workflows/deploy.yml` тепер використовує .NET 10. Перед запуском workflow все одно потрібно перевірити AWS secrets і дозволи.
-6. **Залежності backend мають security advisory.** `dotnet test` показав NU1901/NU1902/NU1903 для деяких NuGet-пакетів. Версії не змінювалися під час аудиту.
-7. **Frontend має відому технічну заборгованість**, описану в `frontend/restaurant-frontend-app/CLAUDE.md`: lint-помилки, застарілі/stub-тести, великий bundle та npm audit issues. Не проводити масовий рефакторинг у межах термінової функції.
-8. **S3 доступність:** Terraform свідомо робить frontend bucket приватним за CloudFront; окремі buckets для публічних зображень/Swagger мають публічний read policy. Перед розгортанням перевірити зміни плану.
-
-## Локальний запуск і перевірки
-
-### Frontend
-
-У `frontend/restaurant-frontend-app`:
-
-```powershell
-npm ci
-npm start
-```
-
-`npm start` має запускати development frontend на `http://localhost:4200`; API-запити спрямовуються на URL із development environment. Production build:
-
-```powershell
-$env:BACKEND_URL = "https://<api-id>.execute-api.<region>.amazonaws.com/develop"
-npm run build
-```
-
-### Backend
-
-Локальний сервісний хост не передбачений. Для тестів:
-
-```powershell
-dotnet test .\restaurant-backend-app.sln
-```
-
-## Фактично виконані перевірки
-
-- Node.js 24.16.0 завантажено окремо у `%LOCALAPPDATA%\Programs\marathon-tools`; Node.js 24.11.0, що вже був у системі, не замінювався.
-- .NET SDK 10.0.403 інстальовано локально в `%USERPROFILE%\.dotnet`.
-- Python 3.11.9 встановлено поряд із Python 3.13.5.
-- `dotnet test .\restaurant-backend-app.sln` після розробки group-order backend — **148 пройдено, 0 помилок**; залишаються попередження компілятора і вразливих NuGet залежностей.
-- `npm ci` завершився: 635 пакетів встановлено; npm повідомив про 57 advisory (37 moderate, 17 high, 3 critical). `npm audit fix` без аналізу не запускався.
-- Production build пройшов, bundle placeholder check успішний. Initial bundle близько 790 kB; перевищує Angular warning budget 500 kB, але нижче 1 MB error budget.
-- Цільові frontend-тести group-order сторінки/API, входу з картки бронювання та auth-регресії: **20 passed**. Останній повний suite до додавання 4 regression-тестів: **209/255 passed, 46 failed**; 34 з них — той самий `spyOnProperty` на non-configurable `FileReader.prototype`, решта — давні `should create` без providers/inputs.
-- Terraform `init -backend=false`, `validate` і `fmt -check` пройшли; `deployment_resources.json` перевірено на валідність і дублікати ключів. AWS-команди, Terraform plan/apply і deployment не виконувалися.
-
-## План для технічної частини 3-го рівня
-
-1. ~~Завершити перевірку frontend install/build і локального UI.~~ Виконано: build проходить, локальний UI перевірено в браузері.
-2. ~~Завершити запропоновану EPAM функцію групового pre-order власника.~~ Виконано: owner API, owner-сесія, керування кошиком/гостями, консолідований submit і Angular-сторінка.
-3. ~~Перевірити AWS-конфігурацію без розкриття credentials.~~ Частково: Terraform validate/fmt і JSON-конфіги перевірено; `plan` потребує AWS credentials.
-4. Попросити підтвердження перед AWS deployment. Не виконувати `terraform apply` / `destroy` і не публікувати код без окремого дозволу.
-5. Підготувати посилання та інструкції для здачі; кодовий репозиторій може бути GitHub або інший сервіс згідно з матеріалами зустрічей.
+Джерела вимог — [EPAM_REQUIREMENTS.md](EPAM_REQUIREMENTS.md),
+актуальні кроки здачі — [EPAM_SUBMISSION.md](EPAM_SUBMISSION.md).

@@ -23,7 +23,7 @@ Some scenarios are expected to fail (`@known-defect`, bugs in the application) o
 |---|---|
 | Git hooks (local) | `pre-commit`: `dotnet format` check and Gherkin lint on staged files · `commit-msg`: Conventional Commits · `pre-push`: build with analyzers |
 | `aqa-quality.yml` | on every push and pull request: no generated files tracked, format, build (warnings are errors), Gherkin lint, test discovery |
-| `aqa-tests.yml` | the scenarios themselves, nightly and on demand (Actions → AQA Tests → Run workflow) |
+| `aqa-tests.yml` | live scenarios, on demand only (Actions → AQA Tests → Run workflow); may create or change test data |
 
 Enable the hooks once per clone, from the repository root:
 
@@ -74,7 +74,7 @@ Publish your work in your own public Git repository (the link is the deliverable
 - **Variables:** `AQA_UI_URL`, `AQA_API_URL`, `AQA_TESTTABLE_ID`
 - **Secrets:** `AQA_WAITER_USERNAME`, `AQA_WAITER_PASSWORD`, `AQA_ADMIN_USERNAME`, `AQA_ADMIN_PASSWORD`, `AQA_TESTTABLE_WAITER_USERNAME`, `AQA_TESTTABLE_WAITER_PASSWORD`
 
-`aqa-quality.yml` runs on every push and pull request; `aqa-tests.yml` (nightly and on demand) tests whatever those variables point at. Never put credentials in the repository, in `.env.example` or in test code.
+`aqa-quality.yml` runs on pushes and pull requests affecting the AQA framework or its quality workflow; `aqa-tests.yml` runs only on demand against the environment those variables point at. Use a test environment because scenarios may create or change data. Never put credentials in the repository, in `.env.example` or in test code.
 
 ## Presetup instructions
 

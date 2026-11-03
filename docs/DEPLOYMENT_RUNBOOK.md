@@ -1,162 +1,100 @@
-# Runbook: розгортання Green & Tasty в AWS
+# Ручне розгортання Green & Tasty
 
-> Статус: **не розгорнуто**. Перевірки доступу завершувались `NoCredentials`; ресурси не створювалися.
-> **Для поточного AWS Projects-проєкту використовуй `docs/AWS_PROJECT_SETUP.md`.**
-> Наведений нижче початковий runbook для `us-west-2` не можна виконувати без адаптації:
-> поточний проєкт закріплений за `eu-north-1`.
-> Перед `terraform apply` і `syndicate deploy` потрібне явне підтвердження власника акаунта.
-> Час і витрати залежать від доступів, ресурсів та використання. `terraform plan` показує
-> зміни ресурсів, а не ціну; AWS Budget відстежує витрати, але не гарантує їх обмеження.
+Demo вже розгорнуто: https://dd9nzqrfa7inx.cloudfront.net/.
+Регіон backend та регіональних ресурсів — **`eu-north-1`**.
+Для перегляду фічі повторний deployment не потрібен.
 
-## 0. Що вже готово
+## Передумови
 
-- Terraform: `terraform init -backend=false` і `terraform validate` пройшли; `terraform fmt -check` чистий.
-- Backend: 148 unit-тестів проходять; нові маршрути зареєстровані в `RouteRegistry`.
-- Frontend: production build проходить; 20 цільових тестів проходять.
-- Syndicate: локальний `project_path` виправлено; artifacts bucket приведено до `marathon2026-restaurant-artifacts-747482682250`.
-- AWS CLI 2.39.3 і Terraform 1.16.6 встановлені.
+- .NET SDK 10, Node.js 24.16.0, Python 3.11, AWS CLI, Terraform >= 1.10, AWS Syndicate.
+- Локальний AWS-профіль, Terraform variables/backend config і Syndicate config з [AWS_PROJECT_SETUP.md](AWS_PROJECT_SETUP.md).
+- Наявний S3 state bucket із versioning, encryption та блокуванням public access.
+  Для нового середовища його створюють окремо до `terraform init`.
+- Для підтримки існуючого середовища збережіть його state і назви ресурсів.
 
-## 1. AWS credentials
+Команди нижче виконуються вручну власником середовища. `apply`, `deploy`, `update`,
+S3 sync та invalidation змінюють AWS-ресурси; GitHub Actions їх автоматично не виконує.
 
-Потрібен доступ до акаунта, який використовується в конфігурації (`747482682250`), або
-заміна цього ID на свій у всіх місцях, перелічених нижче.
+## 1. Terraform
 
-**Регіон:** для розгортання використовується `us-west-2` — це типовий регіон Terraform,
-`backend.tf`, Syndicate-конфігурації та наявного dev API. Згадка `eu-west-1` у
-`frontend/restaurant-frontend-app/CLAUDE.md` є застарілою і не використовується.
-
-### Варіант A: AWS Academy / Learner Lab
-
-1. Відкрий Learner Lab → **AWS Details** → **AWS CLI** → **Show**.
-2. Скопіюй `aws_access_key_id`, `aws_secret_access_key`, `aws_session_token`.
-3. Додай профіль:
-
-```powershell
-aws configure set aws_access_key_id "PASTE_ACCESS_KEY" --profile marathon
-aws configure set aws_secret_access_key "PASTE_SECRET_KEY" --profile marathon
-aws configure set aws_session_token "PASTE_SESSION_TOKEN" --profile marathon
-aws configure set region us-west-2 --profile marathon
-$env:AWS_PROFILE = "marathon"
-aws sts get-caller-identity
-```
-
-Тимчасові credentials Academy діють кілька годин; після завершення lab їх треба оновити.
-Якщо акаунт Learner Lab не збігається з `747482682250`, обов’язково заміни ID у конфігах
-(див. список нижче). Деякі Learner Lab-акаунти обмежують IAM, CloudFront або Cognito —
-у такому разі перевір повідомлення про помилку й дозволи лабораторії, а не змінюй код навмання.
-Пам’ятай, що після завершення курсу Lab-акаунт може бути очищений, і посилання на demo
-перестане працювати; для стабільного публічного demo краще використати власний акаунт.
-
-### Варіант B: власний акаунт
-
-```powershell
-aws configure --profile marathon
-$env:AWS_PROFILE = "marathon"
-aws sts get-caller-identity
-```
-
-Перевір, що `Account` збігається з `747482682250`. Якщо ні — заміни ID у:
-
-- `infra/terraform/backend.tf` (bucket state)
-- `infra/terraform/variables.tf` (`account_id`)
-- `backend/restaurant-backend-app/.syndicate-config-restaurant-backend-app/syndicate.yml`
-- `backend/restaurant-backend-app/.syndicate-config-restaurant-backend-app/syndicate_aliases.yml`
-
-## 2. Terraform state bucket
-
-```powershell
-$ACCOUNT_ID = aws sts get-caller-identity --query Account --output text
-aws s3api head-bucket --bucket "restaurant-terraform-state-$ACCOUNT_ID" 2>$null
-if ($LASTEXITCODE -ne 0) {
-  aws s3api create-bucket --bucket "restaurant-terraform-state-$ACCOUNT_ID" --region us-west-2 --create-bucket-configuration LocationConstraint=us-west-2
-  aws s3api put-bucket-versioning --bucket "restaurant-terraform-state-$ACCOUNT_ID" --versioning-configuration Status=Enabled
-  aws s3api put-public-access-block --bucket "restaurant-terraform-state-$ACCOUNT_ID" --public-access-block-configuration "BlockPublicAcls=true,IgnorePublicAcls=true,BlockPublicPolicy=true,RestrictPublicBuckets=true"
-}
-```
-
-## 3. Terraform plan (без створення ресурсів)
+З кореня репозиторію, після налаштування AWS-профілю:
 
 ```powershell
 cd infra/terraform
-terraform init
+terraform init -reconfigure -backend-config=marathon.backend.hcl
 terraform fmt -check -recursive
 terraform validate
 terraform plan -out=marathon.tfplan
 ```
 
-Переглянь plan: CloudFront, S3, Cognito, SNS, CloudWatch, EventBridge, SQS, Budget.
-`marathon.tfplan` не комітити (він у `.gitignore`).
-
-## 4. Terraform apply — ЛИШЕ ПІСЛЯ ПІДТВЕРДЖЕННЯ
+Перегляньте plan. Для погоджених змін:
 
 ```powershell
 terraform apply marathon.tfplan
 terraform output
 ```
 
-## 5. Backend через Syndicate
+Plan і state не комітяться. Budget відстежує витрати, але не є жорстким лімітом.
 
-> Syndicate потребує AWS credentials навіть для `build`, тому спочатку заверши крок 1.
-> Локальний `syndicate_venv` уже створений; якщо його немає — команди нижче створять його заново.
+## 2. Backend / AWS Syndicate
+
+З кореня репозиторію, з налаштованими локальними Syndicate-файлами:
 
 ```powershell
-cd ../../backend/restaurant-backend-app
+cd backend/restaurant-backend-app
 python -m venv syndicate_venv
 .\syndicate_venv\Scripts\Activate.ps1
 pip install aws-syndicate
 $env:SDCT_CONF = (Resolve-Path ".\.syndicate-config-restaurant-backend-app").Path
-$env:AWS_PROFILE = "marathon"
-syndicate create-deploy-target-bucket
 syndicate build
-syndicate deploy --deploy_name dev
 ```
 
-Якщо `syndicate` не знайдено — перевір, що активовано venv і Python 3.11 доступний як `python`.
+Syndicate потребує AWS-доступ навіть для build. Для **першого** розгортання спочатку
+створіть artifacts bucket командою `syndicate create-deploy-target-bucket`, потім
+виконайте build та `syndicate deploy --deploy_name dev`.
+Для оновлення вже розгорнутого середовища після build використовуйте `syndicate update`.
 
-## 6. Frontend
+## 3. Frontend
+
+З кореня репозиторію:
 
 ```powershell
-$API_ID = aws apigateway get-rest-apis --region us-west-2 --query "items[?name=='restaurant-backend-api'].id | [0]" --output text
-$env:BACKEND_URL = "https://$API_ID.execute-api.us-west-2.amazonaws.com/develop"
-cd ../../frontend/restaurant-frontend-app
+cd frontend/restaurant-frontend-app
+$env:BACKEND_URL = "https://kfhwimu435.execute-api.eu-north-1.amazonaws.com/develop"
 npm ci
 npm run build
-aws s3 sync dist/restaurant-frontend-app/browser "s3://restaurant-frontend-$ACCOUNT_ID/" --delete
-cd ../../infra/terraform
-$DIST_ID = terraform output -raw cloudfront_distribution_id
-aws cloudfront create-invalidation --distribution-id $DIST_ID --paths "/*"
-terraform output cloudfront_distribution_domain_name
 ```
 
-Виконуй кроки в одному PowerShell-сеансі, щоб `$ACCOUNT_ID` і `$DIST_ID` залишалися
-доступними. Інвалідація CloudFront потрібна, інакше браузер може показувати старий bundle.
+Для іншого середовища замініть `BACKEND_URL` на його API. Build генерує gitignored
+`environment.production.ts`; `postbuild` перевіряє bundle на placeholder.
 
-Відкрий `https://<cloudfront-domain>` і перевір сценарій з `docs/EPAM_SUBMISSION.md`.
-
-## 7. Що перевірити після деплою
-
-1. Реєстрація/вхід клієнта.
-2. Бронювання на 2+ гостей.
-3. Картка бронювання → **Group order**.
-4. Запрошення гостя та його кошик.
-5. Власник бачить учасників, страви, суми, статуси.
-6. Власник додає/видаляє свої страви, підтверджує свій кошик.
-7. Власник видаляє гостьову сесію.
-8. Власник підтверджує групове замовлення; офіціант бачить об’єднаний pre-order.
-9. Перевірити, що не-власник отримує `403`, а гість не бачить owner-сторінку.
-
-## 8. Відкат / прибирання
+Для публікації задайте **фактичні** bucket і CloudFront distribution вашого середовища:
 
 ```powershell
-# frontend
-aws s3 rm "s3://restaurant-frontend-$ACCOUNT_ID/" --recursive
-# backend
-cd backend/restaurant-backend-app
-$env:SDCT_CONF = (Resolve-Path ".\.syndicate-config-restaurant-backend-app").Path
-syndicate clean
-# terraform
-cd ../../infra/terraform
-terraform destroy
+$FRONTEND_BUCKET = "<YOUR_FRONTEND_BUCKET>"
+$DISTRIBUTION_ID = "<YOUR_CLOUDFRONT_DISTRIBUTION_ID>"
+aws s3 sync dist/restaurant-frontend-app/browser "s3://$FRONTEND_BUCKET/" --delete
+aws cloudfront create-invalidation --distribution-id $DISTRIBUTION_ID --paths "/*"
 ```
 
-Не запускай `destroy`, поки не переконаєшся, що посилання для здачі більше не потрібні.
+`--delete` прибирає зі вказаного bucket файли, яких немає у build.
+CloudFront domain/id також доступні через Terraform outputs
+`cloudfront_distribution_domain_name` і `cloudfront_distribution_id`.
+
+## 4. Перевірки
+
+1. Головна сторінка, меню та зображення відкриваються по HTTPS.
+2. `/dishes` і `/locations` повертають 200, frontend отримує дані без CORS-помилок.
+3. Без входу owner API відхиляє запити, Group Order перенаправляє на login.
+4. Пройдіть [DEMO_SCRIPT.md](DEMO_SCRIPT.md), включно з гостьовим кошиком і waiter view.
+
+Повний E2E змінює тестові дані; read-only перевірка доступності його не замінює.
+
+## CI
+
+- Backend: локальні unit-тести у GitHub Actions.
+- Frontend: lint, type-check та production build без завантаження до S3.
+- Terraform: fmt/validate з `init -backend=false`, без AWS credentials і apply.
+- AQA quality: статичні перевірки; AQA live tests — лише ручний запуск.
+
+Поточний стан тестів та відомі проблеми — [PROJECT_AUDIT.md](PROJECT_AUDIT.md).

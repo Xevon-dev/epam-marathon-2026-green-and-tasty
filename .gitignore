@@ -36,6 +36,7 @@ __pycache__/
 *.tfvars
 *.tfvars.json
 *.tfplan
+*.backend.hcl
 crash.log
 crash.*.log
 

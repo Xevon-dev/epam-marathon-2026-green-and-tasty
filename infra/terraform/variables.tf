@@ -1,13 +1,16 @@
 variable "aws_region" {
   description = "AWS region for all resources except CloudFront/ACM globals"
   type        = string
-  default     = "us-west-2"
+  default     = "eu-north-1"
 }
 
 variable "account_id" {
   description = "AWS account ID"
   type        = string
-  default     = "747482682250"
+  validation {
+    condition     = can(regex("^[0-9]{12}$", var.account_id))
+    error_message = "account_id must be your 12-digit AWS account ID."
+  }
 }
 
 variable "alert_emails" {
