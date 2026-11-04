@@ -4,8 +4,7 @@
 керування груповим передзамовленням власником бронювання.
 
 **[Відкрити застосунок](https://dd9nzqrfa7inx.cloudfront.net/)** ·
-**[Код проєкту](https://github.com/Xevon-dev/epam-marathon-2026-green-and-tasty)** ·
-**[Сценарій демонстрації](docs/DEMO_SCRIPT.md)**
+**[Код проєкту](https://github.com/Xevon-dev/epam-marathon-2026-green-and-tasty)**
 
 ## Реалізована функція
 
@@ -17,8 +16,7 @@
 - Owner API перевіряє Cognito identity та належність бронювання; гостьові операції використовують токен сесії.
 
 Перед підтвердженням групи потрібно створити базовий **Pre-order** у картці бронювання.
-Редагування закривається за 30 хвилин до початку бронювання. Повні кроки —
-[DEMO_SCRIPT.md](docs/DEMO_SCRIPT.md).
+Редагування закривається за 30 хвилин до початку бронювання.
 
 ## Технології та структура
 
@@ -28,7 +26,6 @@
 | `backend/restaurant-backend-app` | .NET 10, AWS Lambda, API Gateway, DynamoDB, Cognito, xUnit |
 | `infra/terraform` | S3, CloudFront та спільна AWS-інфраструктура |
 | `aqa/restaurant-aqa-framework` | Окремі AQA-матеріали: .NET, Reqnroll, Playwright |
-| `docs` | Демо, вимоги, перевірки та інструкція розгортання |
 
 Основні файли фічі:
 
@@ -47,8 +44,6 @@
 - Owner-only сценарій перевірено на розгорнутому застосунку.
 - **Повний guest contribution → group submit → waiter view ще не підтверджено end-to-end.**
 - Останній повний frontend suite: **209 passed, 46 failed із 255**; це попередній запуск до додавання regression-тестів. Повний suite не позначено як зелений.
-
-Деталі та відомі обмеження — [аудит](docs/PROJECT_AUDIT.md).
 
 ## Локальні перевірки
 
@@ -89,18 +84,14 @@ npm run build
 
 Поточний demo працює в **`eu-north-1`**, frontend — через CloudFront HTTPS.
 Порядок ручного розгортання: Terraform → AWS Syndicate → frontend.
-Інструкція — [DEPLOYMENT_RUNBOOK.md](docs/DEPLOYMENT_RUNBOOK.md),
-локальна конфігурація — [AWS_PROJECT_SETUP.md](docs/AWS_PROJECT_SETUP.md).
+Параметри акаунта та Terraform backend задаються локально в gitignored файлах
+`infra/terraform/marathon.auto.tfvars` і `infra/terraform/marathon.backend.hcl`.
+Для Terraform init використовується `-backend-config=marathon.backend.hcl`.
+Syndicate використовує локальну конфігурацію відповідного AWS-середовища.
 
 GitHub Actions виконує перевірки коду; автоматичні AWS deploy/apply прибрано.
 AQA-сценарії проти живого середовища запускаються лише вручну і можуть змінювати тестові дані.
 Відомі legacy lint/test-проблеми frontend можуть давати невдалий CI — вони не приховані.
-
-## Матеріали для здачі
-
-- [Посилання та опис фічі для анкети](docs/EPAM_SUBMISSION.md)
-- [Вимоги з джерелами й таймкодами](docs/EPAM_REQUIREMENTS.md)
-- [Поточний прогрес](docs/PROGRESS.md)
 
 Застосунок створено на основі навчального проєкту **EPAM IT Marathon 2026**.
 Авторські відомості та матеріали вихідного проєкту збережено.
